@@ -24,7 +24,6 @@ body{
 /* Subtle background watermarks */
 .bg-logo{
   position:fixed; top:-40px; right:-60px; width:min(30vw, 260px); height:min(30vw, 260px);
- 
   opacity:.05; filter: grayscale(100%);
   mix-blend-mode: lighten;
   pointer-events:none; z-index:0;
@@ -142,14 +141,13 @@ body{
 .modal{ position:fixed; inset:0; display:grid; place-items:center; background:rgba(0,0,0,.45); z-index:22 }
 .modal__card{
   width:min(720px, calc(100% - 48px));
-  background:var(--panel); border:1px solid var(--border); border-radius:18px;
+  background:var(--bg-2); border:1px solid var(--border); border-radius:18px;
   box-shadow:0 12px 32px rgba(0,0,0,.35); padding:1rem 1.25rem; position:relative;
 }
 .modal__head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:.5rem }
 .about-brand{ display:flex; align-items:center; gap:10px }
 .about-brand img{ height:22px }
-.about-brand img.vite{ height:20px }
-.about-brand .x{ color:var(--muted); opacity:.7 }
+.about-brand .x{ color:var(--muted); opacity:.7  }
 .bubble{ border-radius:18px; }
 .bubble::after{
   content:""; position:absolute; bottom:-16px; left:24px; width:28px; height:18px;
@@ -158,15 +156,15 @@ body{
 }
 .about-list{ margin:.25rem 0 0 1rem }
 
-/* Confetti (cascading full-height, overlays EVERYTHING) */
+/* Confetti */
 .confetti{
   pointer-events:none; position:fixed; inset:0;
-  z-index:2147483647; /* on top of all */
+  z-index:2147483647;
 }
 .confetti i{
-  position:fixed; top:-16px;
+  position:fixed; top:-16px; left: 0;
   background: currentColor;
-  will-change: transform;
+  will-change: top, transform;
   transform: rotate(var(--rot, 0));
   animation:
     confetti-fall var(--dur, 5s) cubic-bezier(.20,.70,.20,1) forwards,
@@ -177,16 +175,15 @@ body{
 .confetti i:nth-child(4n+2){ color:#2bd67b }
 .confetti i:nth-child(4n+3){ color:#ffcc66 }
 
-/* Overshoot the viewport so every piece goes fully off-screen */
 @keyframes confetti-fall {
-  to { transform: translateY(140svh) rotate(1.25turn) }
+  to { top: 140vh; }
 }
 @keyframes confetti-sway {
   from { transform: translateX(0) rotate(var(--rot, 0)) }
   to   { transform: translateX(var(--sx, 28px)) rotate(calc(var(--rot, 0) + 45deg)) }
 }
 
-/* Print styles: clean one-page PDF */
+/* Print styles */
 .print-only{ display:none }
 .screen-only{ display:initial }
 
@@ -208,9 +205,49 @@ body{
   .notes{ color: #111 }
   .report-brand{ display:flex; align-items:center; gap:12px; margin-bottom:8px }
   .report-brand img{ height:22px }
-  .report-brand .report-vite{ height:20px }
 }
 
 /* Print header text */
 .report-head h1{ margin: 0 0 .25rem }
 .report-head p{ margin: 0; color: #666 }
+
+/* ===== Custom tweaks ===== */
+
+/* Center landing hero */
+.landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.landing .cta { justify-content: center; }
+
+/* Links unified blue in all themes */
+a {
+  color: #7aa7ff;
+  text-decoration: none;
+}
+a:hover {
+  color: #aaccff;
+  text-decoration: underline;
+}
+
+/* Bigger, rounded logos */
+.logo {
+  height: 50px;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+/* Logo above landing title */
+.landing-logo {
+  height: 100px;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+/* Add space above modal action buttons */
+.modal__card .cta {
+  margin-top: 1.5rem;   /* adjust value as needed */
+}
