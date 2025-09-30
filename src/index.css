@@ -66,3 +66,11 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+  html, body, #root { height: 100%; }
+#root {
+  min-height: 100dvh;        /* full viewport height */
+  display: grid;
+  place-items: center;        /* centers horizontally + vertically */
+  margin: 0;                  /* kill default margins */
+  padding: 2rem;
+}
