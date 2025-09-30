@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import msLogo from "./assets/mission-secure.svg";
-import viteLogo from "/vite.svg"; // Vite’s built-in logo
+import darkLogo from "./assets/mission-secureb.png";
+import lightLogo from "./assets/mission-securew.png";
 
 /** ========= Base 10 questions (best=1, iffy=0.5, bad=0) ========= */
 const BASE_QUESTIONS = [
@@ -126,6 +126,7 @@ export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
   const [view, setView] = useState("landing"); // landing | quiz | results
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
 
   const [qs, setQs] = useState(null);
   const [idx, setIdx] = useState(0);
@@ -182,31 +183,25 @@ export default function App() {
 
   return (
     <div className="page">
-      {/* faint background watermarks */}
+      {/* faint background watermark (kept, non-vite) */}
       <div className="bg-logo" aria-hidden="true"></div>
-      <div className="bg-vite" aria-hidden="true"></div>
 
       <Header
         theme={theme}
         setTheme={setTheme}
         onAbout={() => setAboutOpen(true)}
+        onResources={() => setResourcesOpen(true)}
         onStart={start}
-        msLogo={msLogo}
-        viteLogo={viteLogo}
       />
 
       {view === "landing" && (
-        <section className="wrap">
-          <div className="hero-logos" aria-hidden="true">
-            <img src={msLogo} className="hero-logo" alt="" />
-            <span className="x">×</span>
-            <img src={viteLogo} className="hero-logo vite" alt="" />
-          </div>
+        <section className="wrap landing">
+          <img src={theme === "light" ? lightLogo : darkLogo}
+          alt="Mission Secure" className="landing-logo" />
           <h1 className="title">Quick Cyber Hygiene Check</h1>
           <p className="lead">10 questions, plain English. Get a percentage score and quick wins.</p>
           <div className="cta">
             <button className="btn btn--primary" onClick={start}>Take assessment</button>
-            <button className="btn btn--ghost" onClick={() => setAboutOpen(true)}>About us</button>
           </div>
         </section>
       )}
@@ -233,11 +228,9 @@ export default function App() {
           {/* Print header */}
           <header className="print-only report-head">
             <div className="report-brand">
-              <img src={msLogo} alt="" />
-              <img src={viteLogo} className="report-vite" alt="" />
               <div>
                 <h1>Cyber Hygiene Test — Report</h1>
-                <p>by Mission Secure {new Date(result.dateISO).toLocaleString()}</p>
+                <p>by Mission Secure • {new Date(result.dateISO).toLocaleString()}</p>
               </div>
             </div>
           </header>
@@ -265,33 +258,40 @@ export default function App() {
         </section>
       )}
 
-      {aboutOpen && <About modalClose={() => setAboutOpen(false)} viteLogo={viteLogo} msLogo={msLogo} />}
+      {aboutOpen && <About modalClose={() => setAboutOpen(false)} />}
+      {resourcesOpen && <Resources modalClose={() => setResourcesOpen(false)} />}
 
-      {/* persistent corner badge */}
-      <img className="corner-badge" src={msLogo} alt="Mission Secure" aria-hidden="true" />
+      {/* optional persistent corner badge */}
+      <img
+        className="corner-badge"
+        src={theme === "light" ? lightLogo : darkLogo}
+        alt="Mission Secure"
+        aria-hidden="true"
+      />
     </div>
   );
 }
 
 /* ---------- UI Pieces ---------- */
 
-function Header({ theme, setTheme, onAbout, onStart, msLogo, viteLogo }) {
+function Header({ theme, setTheme, onAbout, onResources, onStart }) {
   return (
     <header className="topbar">
       <div className="brand">
-        <img src={msLogo} className="logo" alt="" aria-hidden="true" />
+        <img
+          src={theme === "light" ? lightLogo : darkLogo}
+          alt="Mission Secure"
+          className="logo"
+        />
         <h2>
           Cyber Hygiene Test <span className="by">by Mission Secure</span>
-          <span className="powered">
-            <span className="dot">•</span> <img src={viteLogo} className="logo vite" alt="" aria-hidden="true" /> 
-          </span>
         </h2>
       </div>
 
-      <div className="top-actions">
-        <button className="btn btn--ghost" onClick={onAbout}>About us</button>
+      <div className="top-actions" style={{ display:'flex', gap:16, alignItems:'center' }}>
+        <button className="btn btn--ghost" onClick={onAbout}>About</button>
         <button className="btn btn--primary" onClick={onStart}>Take assessment</button>
-
+        <button className="btn btn--ghost" onClick={onResources}>Resources</button>
         <div className="theme-toggle" aria-label="Theme toggle">
           <input
             id="themeSwitch"
@@ -328,16 +328,14 @@ function BigNumber({ value, hue }) {
   );
 }
 
-function About({ modalClose, viteLogo, msLogo }) {
+/* ---------- About modal ---------- */
+function About({ modalClose }) {
   return (
-    <div className="modal" role="dialog" aria-modal="true" aria-label="About Mission Secure">
-      <div className="modal__card bubble">
+    <div className="modal" role="dialog" aria-modal="true" aria-label="About">
+      <div className="modal__card bubble about-modal">
         <div className="modal__head">
           <div className="about-brand">
-            <img src={msLogo} alt="" aria-hidden="true" />
-            <span className="x">×</span>
-            <img src={viteLogo} className="vite" alt="" aria-hidden="true" />
-            <h3>About Mission Secure</h3>
+            <h3>About</h3>
           </div>
           <button className="link" onClick={modalClose} aria-label="Close">✕</button>
         </div>
@@ -352,6 +350,58 @@ function About({ modalClose, viteLogo, msLogo }) {
           <li>Private by default — runs in your browser</li>
         </ul>
         <div className="cta"><button className="btn btn--primary" onClick={modalClose}>Got it</button></div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Resources modal ---------- */
+function Resources({ modalClose }) {
+  return (
+    <div className="modal" role="dialog" aria-modal="true" aria-label="Resources">
+      <div className="modal__card bubble resources-modal">
+        <div className="modal__head">
+          <div className="about-brand">
+            <h3>Resources used to create quiz</h3>
+          </div>
+          <button className="link" onClick={modalClose} aria-label="Close">✕</button>
+        </div>
+
+        <h4>Primary References</h4>
+        <ul className="about-list">
+          <li>
+            NIST SP 800-171 Rev. 3 — Protecting CUI:
+            {" "}<a target="_blank" rel="noopener noreferrer" href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-171r3.pdf">PDF</a>
+          </li>
+          <li>
+            NIST SP 800-171A — Assessment Procedures:
+            {" "}<a target="_blank" rel="noopener noreferrer" href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-171A.pdf">PDF</a>
+          </li>
+          <li>
+            Breaking Down NIST 800-171 Controls (overview):
+            {" "}<a target="_blank" rel="noopener noreferrer" href="https://sprinto.com/blog/list-of-nist-800-171-controls/">sprinto.com</a>
+          </li>
+        </ul>
+
+        <h4 className="mt">Recommendations (quick wins)</h4>
+        <ul className="about-list">
+          <li><strong>Anti-virus / EDR:</strong> Bitdefender, Norton, Malwarebytes. Enable auto-updates and real-time protection.
+            {" "}
+            <a target="_blank" rel="noopener noreferrer" href="https://www.bitdefender.com/">Bitdefender</a> ·
+            {" "}<a target="_blank" rel="noopener noreferrer" href="https://us.norton.com/">Norton</a> ·
+            {" "}<a target="_blank" rel="noopener noreferrer" href="https://www.malwarebytes.com/">Malwarebytes</a>
+          </li>
+          <li><strong>MFA everywhere:</strong> Email, admin portals, and cloud apps (use an authenticator app or hardware key).</li>
+          <li><strong>Passwords:</strong> Enforce 12+ character passphrases; allow a password manager (1Password, Bitwarden, LastPass).</li>
+          <li><strong>Backups:</strong> Daily, automated, offsite; test a restore quarterly.</li>
+          <li><strong>Access reviews:</strong> Least-privilege; remove unused accounts quarterly.</li>
+          <li><strong>Incident plan:</strong> One-page IR plan + a short tabletop drill.</li>
+          <li><strong>Training:</strong> Annual security training + periodic phishing drills.</li>
+        </ul>
+
+        <div className="cta">
+          <button className="btn btn--primary" onClick={modalClose}>Close</button>
+        </div>
       </div>
     </div>
   );
