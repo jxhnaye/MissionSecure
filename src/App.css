@@ -156,6 +156,27 @@ body{
 }
 .about-list{ margin:.25rem 0 0 1rem }
 
+/* Make modal body scrollable for long content (news list) */
+.modal__body {
+  max-height: min(62vh, 520px);
+  overflow: auto;
+  padding-right: 8px; /* leave room for scrollbar */
+}
+
+/* Nice-looking scrollbar (WebKit/Blink) */
+.modal__body::-webkit-scrollbar { width: 12px; height: 12px; }
+.modal__body::-webkit-scrollbar-track { background: transparent; }
+.modal__body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  border: 3px solid transparent; /* padding effect */
+  background-clip: padding-box;
+}
+.modal__body::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.10); }
+
+/* Firefox scrollbar styling */
+.modal__body { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.06) transparent; }
+
 /* Confetti */
 .confetti{
   pointer-events:none; position:fixed; inset:0;

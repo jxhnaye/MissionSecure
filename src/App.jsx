@@ -4,7 +4,6 @@ import darkLogo from "./assets/mission-secureb.png";
 import lightLogo from "./assets/mission-securew.png";
 import { v4 as uuidv4 } from "uuid";
 
-
 /** ========= Base 10 questions (best=1, iffy=0.5, bad=0) ========= */
 const BASE_QUESTIONS = [
   { id: "q1", text: "Which password is strongest?", options: [
@@ -141,6 +140,9 @@ export default function App() {
   const [view, setView] = useState("landing"); // landing | quiz | results
   const [aboutOpen, setAboutOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [newsOpen, setNewsOpen] = useState(false);
+  const [newsCache, setNewsCache] = useState(null);
+  const [prefetching, setPrefetching] = useState(false);
 
   const [qs, setQs] = useState(null);
   const [idx, setIdx] = useState(0);
@@ -161,6 +163,28 @@ export default function App() {
     setAnswers({});
     setIdx(0);
     setView("quiz");
+  }
+
+  async function prefetchNews() {
+    // avoid duplicate fetches; only fetch if we don't already have cached results
+    if (newsCache || prefetching) return;
+    const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
+    if (!apiKey) return; // nothing to do without a key
+    setPrefetching(true);
+    try {
+      const url = `https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=8&apiKey=${apiKey}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setNewsCache(data.articles || []);
+      } else {
+        setNewsCache([]);
+      }
+    } catch (e) {
+      setNewsCache([]);
+    } finally {
+      setPrefetching(false);
+    }
   }
 
   async function choose(option) {
@@ -240,6 +264,8 @@ export default function App() {
         onAbout={() => setAboutOpen(true)}
         onResources={() => setResourcesOpen(true)}
         onStart={start}
+        onCyberNews={() => setNewsOpen(true)}
+        onPrefetchNews={prefetchNews}
       />
 
       {view === "landing" && (
@@ -308,6 +334,7 @@ export default function App() {
 
       {aboutOpen && <About modalClose={() => setAboutOpen(false)} />}
       {resourcesOpen && <Resources modalClose={() => setResourcesOpen(false)} />}
+  {newsOpen && <CyberNews modalClose={() => setNewsOpen(false)} initialNews={newsCache} />}
 
       {/* optional persistent corner badge */}
       <img
@@ -322,7 +349,7 @@ export default function App() {
 
 /* ---------- UI Pieces ---------- */
 
-function Header({ theme, setTheme, onAbout, onResources, onStart }) {
+function Header({ theme, setTheme, onAbout, onResources, onStart, onCyberNews, onPrefetchNews }) {
   return (
     <header className="topbar">
       <div className="brand">
@@ -337,6 +364,14 @@ function Header({ theme, setTheme, onAbout, onResources, onStart }) {
       </div>
 
       <div className="top-actions" style={{ display:'flex', gap:16, alignItems:'center' }}>
+        <button
+          className="btn btn--ghost"
+          onClick={onCyberNews}
+          onMouseEnter={onPrefetchNews}
+          onFocus={onPrefetchNews}
+        >
+          <span role="img" aria-label="newspaper">📰</span> Latest Cyber News
+        </button>
         <button className="btn btn--ghost" onClick={onAbout}>About</button>
         <button className="btn btn--primary" onClick={onStart}>Take assessment</button>
         <button className="btn btn--ghost" onClick={onResources}>Resources</button>
@@ -454,3 +489,76 @@ function Resources({ modalClose }) {
     </div>
   );
 }
+/* ---------- Cyber News modal ---------- */
+function CyberNews({ modalClose, initialNews = null }) {
+  const [news, setNews] = useState(initialNews ?? []);
+  const [loading, setLoading] = useState(initialNews ? false : true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // If we already have initialNews from prefetch, skip fetching
+    if (initialNews) return;
+    const controller = new AbortController();
+    const fetchNews = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
+        if (!apiKey) {
+          setError('No NewsAPI key configured. Add VITE_NEWSAPI_KEY to your .env');
+          setNews([]);
+          return;
+        }
+        const url = `https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5&apiKey=${apiKey}`;
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+        const data = await res.json();
+        setNews(data.articles || []);
+      } catch (e) {
+        if (e.name !== "AbortError") setError(e.message || "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNews();
+    return () => controller.abort();
+  }, [initialNews]);
+
+  return (
+    <div className="modal" role="dialog" aria-modal="true" aria-label="Cyber news">
+      <div className="modal__card bubble news-modal">
+        <div className="modal__head">
+          <div className="about-brand">
+            <h3>Latest Cybersecurity News</h3>
+          </div>
+          <button className="link" onClick={modalClose} aria-label="Close">✕</button>
+        </div>
+
+        <div className="modal__body">
+          {loading && <div style={{ padding: "1rem" }}>Loading news...</div>}
+          {error && <div style={{ color: "red", padding: "1rem" }}>Error: {error}</div>}
+          {!loading && !error && !news.length && <div style={{ padding: "1rem" }}>No recent articles found.</div>}
+
+          {!loading && !error && news.length > 0 && (
+            <ul className="about-list">
+              {news.map((item) => (
+                <li key={item.url || item.publishedAt}>
+                  <a href={item.url} target="_blank" rel="noopener noreferrer">{item.title}</a>
+                  <div style={{ fontSize: "0.9em", color: "#a3a7b3" }}>
+                    {item.source?.name || "Unknown source"} — {item.publishedAt ? new Date(item.publishedAt).toLocaleString() : "Unknown date"}
+                  </div>
+                  <div>{item.description || ""}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="cta">
+          <button className="btn btn--primary" onClick={modalClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+/* ----End of Cyber News modal------ */
