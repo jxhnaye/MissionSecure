@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import darkLogo from "./assets/mission-secureb.png";
 import lightLogo from "./assets/mission-securew.png";
+import { v4 as uuidv4 } from "uuid";
+
 
 /** ========= Base 10 questions (best=1, iffy=0.5, bad=0) ========= */
 const BASE_QUESTIONS = [
@@ -122,6 +124,18 @@ async function gradeWithAI(answers, percent, localNotes) {
   }
 }
 
+// Identify this quiz version and the browser session (anonymous)
+const QUIZ_ID = "mission-secure-v1";
+function getSessionId() {
+  const key = "ms_session_id";
+  let sid = localStorage.getItem(key);
+  if (!sid) {
+    sid = uuidv4();
+    localStorage.setItem(key, sid);
+  }
+  return sid;
+}
+
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
   const [view, setView] = useState("landing"); // landing | quiz | results
@@ -149,13 +163,47 @@ export default function App() {
     setView("quiz");
   }
 
-  function choose(option) {
+  async function choose(option) {
     const current = qs[idx];
     const nextAnswers = { ...answers, [current.id]: option };
     setAnswers(nextAnswers);
+    try {
+      const sessionId = getSessionId();
+      await logResponse({
+        sessionId,
+        quizId: QUIZ_ID,
+        questionId: current.id,
+        optionLabel: option.label,
+       optionTag: option.tag,
+       weight: Number(option.weight ?? 0)
+      });
+    } catch (e) {
+    console.error("Failed to log response:", e);
+    }    
     if (idx + 1 < total) setIdx(idx + 1);
     else finish(nextAnswers);
+   
   }
+
+  async function logResponse(data) {
+  try {
+    const res = await fetch("http://localhost:3001/responses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      console.error("Failed to log response:", err);
+    } else {
+      console.log("✅ Response logged successfully");
+    }
+  } catch (error) {
+    console.error("❌ Error sending response to server:", error);
+  }
+}
+
 
   function localScoreAndNotes(ans) {
     const items = qs || BASE_QUESTIONS;

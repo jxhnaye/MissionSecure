@@ -2,14 +2,50 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import mongoose from "mongoose";
 
 const app = express();
 app.use(cors({ origin: 'http://localhost:5173' })); // allow Vite dev site
 app.use(express.json({ limit: '1mb' }));
 
+// ====== MongoDB connection ======
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch(err => console.error("❌ MongoDB connection error:", err));
+
+// ====== Schema & Model ======
+const responseSchema = new mongoose.Schema({
+  sessionId: String,
+  quizId: String,
+  questionId: String,
+  optionLabel: String,
+  optionTag: String,
+  weight: Number,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Response = mongoose.model("Response", responseSchema);
+
 // Optional friendly pages
 app.get('/', (req, res) => res.type('text/plain').send('Mission Secure API is running. POST /api/grade'));
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
+
+// ====== POST /responses ======
+app.post("/responses", async (req, res) => {
+  const { sessionId, quizId, questionId, optionLabel, optionTag, weight } = req.body || {};
+
+  if (!sessionId || !quizId || !questionId || !optionLabel || !optionTag || typeof weight !== "number") {
+    return res.status(400).json({ error: "Missing or invalid fields." });
+  }
+
+  try {
+    await Response.create({ sessionId, quizId, questionId, optionLabel, optionTag, weight });
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error("❌ Failed to insert response:", err);
+    res.status(500).json({ error: "Failed to save response." });
+  }
+});
 
 // Accept client score (0..100) + notes, optionally refine with OpenAI
 app.post('/api/grade', async (req, res) => {
@@ -60,6 +96,55 @@ app.post('/api/grade', async (req, res) => {
   }
 
   res.json({ score, notes });
+});
+
+
+// ====== GET /stats ======
+app.get("/stats", async (req, res) => {
+  const quizId = req.query.quizId;
+  if (!quizId) return res.status(400).json({ error: "quizId is required" });
+
+  try {
+    const rows = await Response.aggregate([
+      { $match: { quizId } },
+      {
+        $group: {
+          _id: { questionId: "$questionId", optionLabel: "$optionLabel", optionTag: "$optionTag" },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id.questionId",
+          options: {
+            $push: {
+              optionLabel: "$_id.optionLabel",
+              optionTag: "$_id.optionTag",
+              count: "$count"
+            }
+          },
+          total: { $sum: "$count" }
+        }
+      },
+      { $project: { _id: 0, questionId: "$_id", total: 1, options: 1 } }
+    ]);
+
+    const questions = {};
+    for (const r of rows) {
+      questions[r.questionId] = {
+        total: r.total,
+        options: r.options.map(o => ({
+          ...o,
+          pct: r.total ? +(100 * o.count / r.total).toFixed(2) : 0
+        }))
+      };
+    }
+
+    res.json({ quizId, questions });
+  } catch (err) {
+    console.error("❌ Failed to aggregate stats:", err);
+    res.status(500).json({ error: "Failed to fetch stats." });
+  }
 });
 
 // LAN access (optional): change to '0.0.0.0'
