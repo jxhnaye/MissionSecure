@@ -3,6 +3,7 @@ import "./App.css";
 import darkLogo from "./assets/mission-secureb.png";
 import lightLogo from "./assets/mission-securew.png";
 import { v4 as uuidv4 } from "uuid";
+import ContactUs from "./ContactUs";
 
 
 /** ========= Base 10 questions (best=1, iffy=0.5, bad=0) ========= */
@@ -337,6 +338,7 @@ function Header({ theme, setTheme, onAbout, onResources, onStart }) {
       </div>
 
       <div className="top-actions" style={{ display:'flex', gap:16, alignItems:'center' }}>
+      <ContactUs />
         <button className="btn btn--ghost" onClick={onAbout}>About</button>
         <button className="btn btn--primary" onClick={onStart}>Take assessment</button>
         <button className="btn btn--ghost" onClick={onResources}>Resources</button>

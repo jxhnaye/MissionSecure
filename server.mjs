@@ -147,5 +147,32 @@ app.get("/stats", async (req, res) => {
   }
 });
 
+  // Contact Schema
+const contactSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  message: String,
+  date: { type: Date, default: Date.now }
+});
+
+const Contact = mongoose.model('Contact', contactSchema);
+
+// POST route for Contact Us form
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'All fields required' });
+    }
+    const contact = new Contact({ name, email, message });
+    await contact.save();
+    res.status(201).json({ success: true });
+  } catch (error) {
+    console.error('Error saving contact form:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 // LAN access (optional): change to '0.0.0.0'
 app.listen(3001, () => console.log('API listening on http://localhost:3001'));
