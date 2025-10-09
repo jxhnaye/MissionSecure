@@ -1,4 +1,4 @@
-##About The Website
+# About The Website
 
 This website was scaffolded by vite and react by the LA Tech.org group that goes by "Mission Secure"
 We aim to create a easy to access secure website where the user can quiz themselves on a well researched test about cybersecurity hygine we have tailored that gives the user feedback after they finish the test. We have successfully added and intergrated an updating bulletin board of things going on in the cybersecurity world, a grading system that gives you many responses based on your score, and a fully integrated database that helps collect user inputs that have to do with questions & concerns. 
