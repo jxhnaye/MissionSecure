@@ -138,7 +138,7 @@ function getSessionId() {
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
   const [view, setView] = useState("landing"); // landing | quiz | results
-  const [aboutOpen, setAboutOpen] = useState(false);
+  const [whoWeAreOpen, setWhoWeAreOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [newsOpen, setNewsOpen] = useState(false);
   const [newsCache, setNewsCache] = useState(null);
@@ -148,6 +148,7 @@ export default function App() {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
+  const [transitioning, setTransitioning] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -191,19 +192,26 @@ export default function App() {
     const current = qs[idx];
     const nextAnswers = { ...answers, [current.id]: option };
     setAnswers(nextAnswers);
-    try {
-      const sessionId = getSessionId();
-      await logResponse({
-        sessionId,
-        quizId: QUIZ_ID,
-        questionId: current.id,
-        optionLabel: option.label,
-       optionTag: option.tag,
-       weight: Number(option.weight ?? 0)
-      });
-    } catch (e) {
-    console.error("Failed to log response:", e);
-    }    
+
+    // Fire-and-forget logging so the UI advances immediately
+    (async () => {
+      try {
+        const sessionId = getSessionId();
+        await logResponse({
+          sessionId,
+          quizId: QUIZ_ID,
+          questionId: current.id,
+          optionLabel: option.label,
+          optionTag: option.tag,
+          weight: Number(option.weight ?? 0)
+        });
+      } catch (e) {
+        // swallow network errors to avoid affecting UI
+        console.error("Failed to log response:", e);
+      }
+    })();
+
+    // advance UI immediately
     if (idx + 1 < total) setIdx(idx + 1);
     else finish(nextAnswers);
    
@@ -261,7 +269,7 @@ export default function App() {
       <Header
         theme={theme}
         setTheme={setTheme}
-        onAbout={() => setAboutOpen(true)}
+        onWhoWeAre={() => setWhoWeAreOpen(true)}
         onResources={() => setResourcesOpen(true)}
         onStart={start}
         onCyberNews={() => setNewsOpen(true)}
@@ -289,7 +297,19 @@ export default function App() {
           <h2 className="q">{q.text}</h2>
           <div className="options">
             {q.options.map((opt, i) => (
-              <button key={i} className="option" onClick={() => choose(opt)} aria-label={`Answer: ${opt.label}`}>
+              <button
+                key={i}
+                className="option"
+                onClick={() => {
+                  if (transitioning) return;
+                  setTransitioning(true);
+                  choose(opt);
+                  // small delay to prevent double clicks during state update
+                  setTimeout(() => setTransitioning(false), 250);
+                }}
+                aria-label={`Answer: ${opt.label}`}
+                disabled={transitioning}
+              >
                 {opt.label}
               </button>
             ))}
@@ -332,7 +352,7 @@ export default function App() {
         </section>
       )}
 
-      {aboutOpen && <About modalClose={() => setAboutOpen(false)} />}
+      {whoWeAreOpen && <WhoWeAre modalClose={() => setWhoWeAreOpen(false)} />}
       {resourcesOpen && <Resources modalClose={() => setResourcesOpen(false)} />}
   {newsOpen && <CyberNews modalClose={() => setNewsOpen(false)} initialNews={newsCache} />}
 
@@ -349,7 +369,7 @@ export default function App() {
 
 /* ---------- UI Pieces ---------- */
 
-function Header({ theme, setTheme, onAbout, onResources, onStart, onCyberNews, onPrefetchNews }) {
+function Header({ theme, setTheme, onWhoWeAre, onResources, onStart, onCyberNews, onPrefetchNews }) {
   return (
     <header className="topbar">
       <div className="brand">
@@ -372,7 +392,7 @@ function Header({ theme, setTheme, onAbout, onResources, onStart, onCyberNews, o
         >
           <span role="img" aria-label="newspaper">📰</span> Latest Cyber News
         </button>
-        <button className="btn btn--ghost" onClick={onAbout}>About</button>
+        <button className="btn btn--ghost" onClick={onWhoWeAre}>Who We Are</button>
         <button className="btn btn--primary" onClick={onStart}>Take assessment</button>
         <button className="btn btn--ghost" onClick={onResources}>Resources</button>
         <div className="theme-toggle" aria-label="Theme toggle">
@@ -410,33 +430,195 @@ function BigNumber({ value, hue }) {
     </div>
   );
 }
+/* ---------- Team Data ---------- */
+const TEAM = [
+   {
+    name: "Rae McElroy",
+    role: "Advisor",
+    school: "Founder, CyberSloth Security & Technology",
+    degree: "Software Engineer; CyberAB Registered Practitioner (RP)",
+    blurb: "Enjoys traveling, the arts, and believing in wild dreams.",
+  },
+  {
+    name: "Laila Velasquez",
+    role: "Researcher",
+    school: "California State University Los Angeles",
+    degree: "B.S. Computer Science — May 2026",
+    blurb: "Passionate about Data Science and I love matcha.",
+  },
+  {
+    name: "Aaliyah Crawford",
+    role: "Researcher",
+    school: "Langston University",
+    degree: "B.S. Technology Engineering — 2024",
+    blurb: "Fun fact: __________",
+  },
+  {
+    name: "Benjamin Maldonado",
+    role: "Cybersecurity / Frontend",
+    school: "California State University, Northridge",
+    degree: "Computer Science / Computer Information Technology — May 2027",
+    blurb: "Plays soccer for CSUN and loves traveling around California.",
+  },
+  {
+    name: "Caroline De La Cruz",
+    role: "Project Manager",
+    school: "California State University, Northridge",
+    degree: "Computer Information Technology — May 2027",
+    blurb: "Enjoys reading and fun adventures.",
+  },
+  {
+    name: "Jonathan Gutierrez",
+    role: "Database Developer",
+    school: "California State University, Long Beach",
+    degree: "Computer Science — May 2025",
+    blurb: "Loves snowboarding, watching F1, and college football.",
+  },
+  {
+    name: "Miles Ontiveros",
+    role: "Backend Developer",
+    school: "California State Polytechnic University, Pomona",
+    degree: "Computer Information Systems — May 2027",
+    blurb: "I love retro tech and thrifting.",
+  },
+  {
+    name: "Janie Lozano",
+    role: "Frontend / Researcher",
+    school: "California State University, Dominguez Hills",
+    degree: "B.S. Information Technology — May 2026",
+    blurb: "I love drawing, painting and watching TV shows.",
+  },
+  {
+    name: "John Aye",
+    role: "Backend Developer / Researcher",
+    school: "California State University, Dominguez Hills",
+    degree: "B.S. Computer Science — Dec 2024",
+    blurb: "Enjoys live music, snowboarding, and traveling.",
+  },
+];
 
-/* ---------- About modal ---------- */
-function About({ modalClose }) {
-  return (
-    <div className="modal" role="dialog" aria-modal="true" aria-label="About">
-      <div className="modal__card bubble about-modal">
+/* ---------- Who We Are modal ---------- */
+function WhoWeAre({ modalClose }) {
+   const [showTeam, setShowTeam] = useState(false);
+
+  const initials = (name) =>
+    name.split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0]).join("").toUpperCase();
+
+    return (
+    <div className="modal" role="dialog" aria-modal="true" aria-labelledby="whoWeAreTitle">
+      <div className="modal__card bubble WhoWeAre-modal">
         <div className="modal__head">
-          <div className="about-brand">
-            <h3>About</h3>
+          <div className="WhoWeAre-brand">
+            <h3 id="whoWeAreTitle">Who We Are</h3>
           </div>
-          <button className="link" onClick={modalClose} aria-label="Close">✕</button>
+          <button className="link" onClick={modalClose} aria-label="Close Who We Are modal">✕</button>
         </div>
+        
         <p>
           This quick self-check translates NIST SP 800-171 basics into
-          plain English. Our mission: celebrate strengths, surface fast wins,
+          plain English. Our mission: celebrate strengths, surface quick wins,
           and guide your next best step.
         </p>
-        <ul className="about-list">
+
+        <ul className="WhoWeAre-list">
           <li>Simple questions anyone can answer</li>
-          <li>Percent score with color gradient</li>
+          <li>Percent score with a helpful color gradient</li>
           <li>Private by default — runs in your browser</li>
         </ul>
-        <div className="cta"><button className="btn btn--primary" onClick={modalClose}>Got it</button></div>
+
+        {/* actions */}
+        <div className="cta" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <button className="btn btn--primary" onClick={modalClose} autoFocus>Got it</button>
+          <button
+            className="btn btn--secondary"
+            aria-expanded={showTeam}
+            aria-controls="whoWeAreTeam"
+            onClick={() => setShowTeam((v) => !v)}
+          >
+            {showTeam ? "Hide Team" : "Meet the Team"}
+          </button>
+        </div>
+
+        {/* collapsible team area */}
+        <div
+          id="whoWeAreTeam"
+          hidden={!showTeam}
+          className="WhoWeAre-team"
+          style={{
+            marginTop: 16,
+            paddingTop: 16,
+        borderTop: "1px solid rgba(255,255,255,0.08)",
+        maxHeight: 340,            // keeps modal from growing too tall
+        overflow: "auto",
+        scrollbarWidth: "none",    // Firefox
+        msOverflowStyle: "none",   // IE/Edge
+       }}
+      >
+       <style>
+        {`
+          .WhoWeAre-team::-webkit-scrollbar {
+           display: none;
+          }
+        `}
+       </style>
+       <div className="grid" style={{
+        display: "grid",
+        gap: 12,
+        gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))"
+       }}>
+        {TEAM.map((m) => (
+          <article key={m.name}
+           className="bubble"
+           style={{
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
+            borderRadius: 16,
+            padding: 12
+           }}
+          >
+           <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: "9999px",
+              background: "var(--bg-2)",
+              border: "1px solid var(--border)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 12,
+              color: "var(--text)"
+            }}>
+              {initials(m.name)}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 600, lineHeight: 1.1 }}>{m.name}</div>
+              <div style={{ opacity: 0.7, fontSize: 12 }}>{m.role}</div>
+            </div>
+           </div>
+
+           <div style={{ marginTop: 8, fontSize: 13, opacity: 0.9 }}>
+            <div>{m.school}</div>
+            <div style={{ opacity: 0.7 }}>{m.degree}</div>
+            <p style={{ marginTop: 6 }}>{m.blurb}</p>
+           </div>
+
+           {/* LinkedIn slot (enable later by adding m.linkedin) */}
+           {/* {m.linkedin && (
+            <a href={m.linkedin} target="_blank" rel="noreferrer"
+              className="link" aria-label={`LinkedIn profile of ${m.name}`}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8, fontSize: 13 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+               <path fill="currentColor" d="M6.94 7.5H3.56V20h3.38V7.5zM5.25 3.5a2 2 0 100 4 2 2 0 000-4zM20.44 20v-6.66c0-3.56-1.9-5.22-4.44-5.22-2.05 0-2.96 1.15-3.47 1.95v-1.67H9.19V20h3.34v-6.1c0-1.61.31-3.16 2.29-3.16 1.95 0 1.98 1.82 1.98 3.25V20h3.64z"/>
+              </svg>
+              LinkedIn
+            </a>
+           )} */}
+          </article>
+        ))}
+       </div>
       </div>
     </div>
+   </div>
   );
 }
+/* ---------- End of Who We Are modal ---------- */
 
 /* ---------- Resources modal ---------- */
 function Resources({ modalClose }) {
