@@ -2,6 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import darkLogo from "./assets/mission-secureb.png";
 import lightLogo from "./assets/mission-securew.png";
+import benjaminPhoto from "./assets/team/benjamin.jpg.png";
+import lailaPhoto from "./assets/team/laila.jpg.png";
+import carolinePhoto from "./assets/team/caroline.jpg.png";
+import raePhoto from "./assets/team/rae.jpg.png";
 import { v4 as uuidv4 } from "uuid";
 
 /** ========= Base 10 questions (best=1, iffy=0.5, bad=0) ========= */
@@ -438,6 +442,8 @@ const TEAM = [
     school: "Founder, CyberSloth Security & Technology",
     degree: "Software Engineer; CyberAB Registered Practitioner (RP)",
     blurb: "Enjoys traveling, the arts, and believing in wild dreams.",
+    import raePhoto
+    Linkedln "https://www.linkedin.com/in/raefromhsj/";
   },
   {
     name: "Laila Velasquez",
