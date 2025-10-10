@@ -442,8 +442,8 @@ const TEAM = [
     school: "Founder, CyberSloth Security & Technology",
     degree: "Software Engineer; CyberAB Registered Practitioner (RP)",
     blurb: "Enjoys traveling, the arts, and believing in wild dreams.",
-    import raePhoto
-    Linkedln "https://www.linkedin.com/in/raefromhsj/";
+    import: raePhoto
+    Linkedln: "https://www.linkedin.com/in/raefromhsj/";
   },
   {
     name: "Laila Velasquez",
@@ -451,6 +451,8 @@ const TEAM = [
     school: "California State University Los Angeles",
     degree: "B.S. Computer Science — May 2026",
     blurb: "Passionate about Data Science and I love matcha.",
+    import: lailaPhoto
+    Linkedln: "";
   },
   {
     name: "Aaliyah Crawford",
@@ -458,6 +460,8 @@ const TEAM = [
     school: "Langston University",
     degree: "B.S. Technology Engineering — 2024",
     blurb: "Fun fact: __________",
+    import: aaliyahPhoto
+    */---Linkedln "";----*/
   },
   {
     name: "Benjamin Maldonado",
@@ -465,6 +469,8 @@ const TEAM = [
     school: "California State University, Northridge",
     degree: "Computer Science / Computer Information Technology — May 2027",
     blurb: "Plays soccer for CSUN and loves traveling around California.",
+    import: benjaminPhoto
+    */---Linkedln "";----*/
   },
   {
     name: "Caroline De La Cruz",
@@ -472,6 +478,8 @@ const TEAM = [
     school: "California State University, Northridge",
     degree: "Computer Information Technology — May 2027",
     blurb: "Enjoys reading and fun adventures.",
+    import: carolinePhoto
+    */---Linkedln "";----*/
   },
   {
     name: "Jonathan Gutierrez",
@@ -479,6 +487,8 @@ const TEAM = [
     school: "California State University, Long Beach",
     degree: "Computer Science — May 2025",
     blurb: "Loves snowboarding, watching F1, and college football.",
+    import: joanthanPhoto
+    */---Linkedln "";----*/
   },
   {
     name: "Miles Ontiveros",
@@ -486,6 +496,8 @@ const TEAM = [
     school: "California State Polytechnic University, Pomona",
     degree: "Computer Information Systems — May 2027",
     blurb: "I love retro tech and thrifting.",
+    import: milesPhoto
+    */---Linkedln "";----*/
   },
   {
     name: "Janie Lozano",
@@ -493,6 +505,8 @@ const TEAM = [
     school: "California State University, Dominguez Hills",
     degree: "B.S. Information Technology — May 2026",
     blurb: "I love drawing, painting and watching TV shows.",
+    import: janiePhoto
+    */---Linkedln "";----*/
   },
   {
     name: "John Aye",
@@ -500,6 +514,8 @@ const TEAM = [
     school: "California State University, Dominguez Hills",
     degree: "B.S. Computer Science — Dec 2024",
     blurb: "Enjoys live music, snowboarding, and traveling.",
+    import: johnPhoto
+    */---Linkedln "";----*/
   },
 ];
 
