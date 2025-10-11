@@ -693,6 +693,8 @@ function Resources({ modalClose }) {
     </div>
   );
 }
+/* ---- End of Resources modal --------*/
+
 /* ---------- Cyber News modal ---------- */
 function CyberNews({ modalClose, initialNews = null }) {
   const [news, setNews] = useState(initialNews ?? []);
