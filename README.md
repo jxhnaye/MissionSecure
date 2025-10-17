@@ -1,11 +1,11 @@
 # About The Website
+This website was developed using Vite and React by the LA Tech.org intern group under the name "Mission Secure". The goal of this project is to provide an accessible and interactive platform that helps users assess and improve their cybersecurity hygiene. The site features a self-assessment quiz that gives immediate, personalized feedback upon completion, helping users understand their strengths and areas for improvement in cybersecurity practices.
 
-This website was scaffolded by vite and react by the LA Tech.org group that goes by "Mission Secure"
-We aim to create a easy to access secure website where the user can quiz themselves on a well researched test about cybersecurity hygine we have tailored that gives the user feedback after they finish the test. We have successfully added and intergrated an updating bulletin board of things going on in the cybersecurity world, a grading system that gives you many responses based on your score, and a fully integrated database that helps collect user inputs that have to do with questions & concerns. 
+In addition to the quiz, the platform includes an updating bulletin board that highlights current events and developments in the cybersecurity world, a grading and response system that adapts to users’ scores, and a fully integrated database designed to collect and organize user inputs, questions, and feedback. Together, these elements create a dynamic learning experience centered on security awareness and digital safety.
 
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Technical Overview
+The site was scaffolded with Vite and built using React, which provides a fast development environment with Hot Module Replacement (HMR) and efficient ESLint integration.
+This template provides a minimal setup to get React working in Vite.
 
 Currently, two official plugins are available:
 
