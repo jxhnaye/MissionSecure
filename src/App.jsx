@@ -8,6 +8,7 @@ import carolinePhoto from "./assets/team/caroline.jpg.png";
 import raePhoto from "./assets/team/rae.jpg.png";
 import milesPhoto from "./assets/team/miles.jpg.jpg";
 import johnPhoto from "./assets/team/john.jpg.png";
+import jonathanPhoto from "./assets/team/jonathan.jpg.png";
 import { v4 as uuidv4 } from "uuid";
 import ContactUs from "./ContactUs";
 
@@ -860,6 +861,7 @@ const TEAM = [
     degree: "Computer Science — May 2025",
     blurb: "I love snowboarding, watching F1, and college football.",
     linkedin: "https://www.linkedin.com/in/jonathan-gutierrez-134433233/",
+    photo: jonathanPhoto,
     emoji: "🏎️",
   },
   {
