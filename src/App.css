@@ -4,10 +4,30 @@
   --bg-1:#0f111a; --bg-2:#1b1f3b; --text:#e9e9ef; --muted:#a3a7b3;
   --border:#ffffff1e; --primary:#7c5cff; --primary-2:#6a8dff;
   --panel: color-mix(in oklab, white 6%, transparent);
+  --card-bg: var(--panel);
+  --border-color: var(--border);
+  --text-color: var(--text);
+  --text-muted: var(--muted);
+  --accent-bg: color-mix(in oklab, var(--primary) 15%, transparent);
+  --accent-border: color-mix(in oklab, var(--primary) 30%, transparent);
+  --accent-text: var(--primary-2);
+  --success-bg: color-mix(in oklab, #4CAF50 15%, transparent);
+  --success-border: color-mix(in oklab, #4CAF50 30%, transparent);
+  --success-text: #4CAF50;
 }
 :root[data-theme="light"]{
   --bg-1:#f6f7fb; --bg-2:#e7ecff; --text:#17181c; --muted:#4b4f58;
   --border:#0000001a; --panel: color-mix(in oklab, black 4%, white 92%);
+  --card-bg: var(--panel);
+  --border-color: var(--border);
+  --text-color: var(--text);
+  --text-muted: var(--muted);
+  --accent-bg: color-mix(in oklab, var(--primary) 10%, white 85%);
+  --accent-border: color-mix(in oklab, var(--primary) 20%, white 75%);
+  --accent-text: var(--primary);
+  --success-bg: color-mix(in oklab, #4CAF50 10%, white 85%);
+  --success-border: color-mix(in oklab, #4CAF50 20%, white 75%);
+  --success-text: #2E7D32;
 }
 
 *{ box-sizing:border-box }
@@ -203,9 +223,69 @@ body{
   .wrap{ margin: 0 auto !important; width: 100% !important; max-width: 7.5in }
   .score__bar{ border-color: #ddd; background: #eee }
   .score__legend{ color: #555 }
-  .notes{ color: #111 }
+  .notes{ color: #111 !important }
   .report-brand{ display:flex; align-items:center; gap:12px; margin-bottom:8px }
   .report-brand img{ height:22px }
+  
+  /* Print styles for new sections */
+  h2, h3, h4 { color: #111 !important; page-break-after: avoid; }
+  
+  /* Section-specific print styles */
+  .executive-summary,
+  .category-breakdown,
+  .industry-comparison,
+  .action-plan {
+    background: #f9f9f9 !important;
+    border: 1px solid #ddd !important;
+    page-break-inside: avoid;
+  }
+  
+  .section-title {
+    color: #111 !important;
+    font-weight: bold !important;
+  }
+  
+  .label-text {
+    color: #666 !important;
+    font-size: 12px !important;
+  }
+  
+  .value-text {
+    color: #111 !important;
+    font-weight: bold !important;
+  }
+  
+  .risk-level[style*="Low Risk"] { color: #388e3c !important; }
+  .risk-level[style*="Moderate Risk"] { color: #f57c00 !important; }
+  .risk-level[style*="High Risk"] { color: #d32f2f !important; }
+  
+  /* Action items print styles */
+  .action-item {
+    color: #111 !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .action-item:before {
+    content: "• ";
+    font-weight: bold;
+  }
+  
+  /* Force all text in report sections to be dark */
+  #report * {
+    color: #111 !important;
+  }
+  
+  /* Progress bars simplified for print */
+  .category-progress {
+    background: #e0e0e0 !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  .category-progress-fill {
+    background: #4CAF50 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
 
 /* Print header text */
@@ -252,3 +332,4 @@ a:hover {
 .modal__card .cta {
   margin-top: 1.5rem;   /* adjust value as needed */
 }
+

@@ -33,21 +33,15 @@ function ContactUs() {
       </button>
 
       {isOpen && (
-        <div
-          className="modal"
-          style={{ alignItems: "flex-start", paddingTop: "100px" }} // moves bubble lower
-          onClick={() => setIsOpen(false)}
-        >
-          <div
-            className="modal__card bubble"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="modal" role="dialog" aria-modal="true" aria-labelledby="contactUsTitle" onClick={() => setIsOpen(false)}>
+          <div className="modal__card bubble" onClick={(e) => e.stopPropagation()}>
             <div className="modal__head">
-              <h2>Contact Us</h2>
-              <button className="link" onClick={() => setIsOpen(false)}>
-                ×
-              </button>
+              <div className="about-brand">
+                <h3 id="contactUsTitle">Contact Us</h3>
+              </div>
+              <button className="link" onClick={() => setIsOpen(false)} aria-label="Close Contact Us modal">✕</button>
             </div>
+            
             <form onSubmit={handleSubmit} className="cta" style={{ flexDirection: "column", gap: "12px" }}>
               <input
                 name="name"
