@@ -433,7 +433,7 @@ export default function App() {
   const onPrefetchNews = async () => {
     if (prefetchedNews) return; // Already prefetched
     try {
-      const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
+      const apiKey = import.meta.env.NEWSAPI_KEY;
       if (!apiKey) return;
       const url = `https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5&apiKey=${apiKey}`;
       const res = await fetch(url);
@@ -1426,9 +1426,9 @@ function CyberNews({ modalClose, initialNews = null }) {
       setLoading(true);
       setError(null);
       try {
-        const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
+        const apiKey = import.meta.env.NEWSAPI_KEY;
         if (!apiKey) {
-          setError('No NewsAPI key configured. Add VITE_NEWSAPI_KEY to your .env');
+          setError('No NewsAPI key configured. Add NEWSAPI_KEY to your .env');
           setNews([]);
           return;
         }
