@@ -3,8 +3,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import mongoose from "mongoose";
-import fetch from 'node-fetch'; // required for NewsAPI calls
-
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
 const app = express();
 
 // ====== Middleware ======
