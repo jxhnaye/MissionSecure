@@ -3,8 +3,11 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import mongoose from "mongoose";
+import fetch from 'node-fetch'; // required for NewsAPI calls
 
 const app = express();
+
+// ====== Middleware ======
 app.use(cors({ origin: 'http://localhost:5173' })); // allow Vite dev site
 app.use(express.json({ limit: '1mb' }));
 
@@ -26,14 +29,13 @@ const responseSchema = new mongoose.Schema({
 
 const Response = mongoose.model("Response", responseSchema);
 
-// Optional friendly pages
+// ====== Root & Health Check ======
 app.get('/', (req, res) => res.type('text/plain').send('Mission Secure API is running. POST /api/grade'));
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 
 // ====== POST /responses ======
 app.post("/responses", async (req, res) => {
   const { sessionId, quizId, questionId, optionLabel, optionTag, weight } = req.body || {};
-
   if (!sessionId || !quizId || !questionId || !optionLabel || !optionTag || typeof weight !== "number") {
     return res.status(400).json({ error: "Missing or invalid fields." });
   }
@@ -47,16 +49,14 @@ app.post("/responses", async (req, res) => {
   }
 });
 
-// Accept client score (0..100) + notes, optionally refine with OpenAI
+// ====== AI grading route ======
 app.post('/api/grade', async (req, res) => {
   const { answers = {}, localScore = 0, localNotes = [] } = req.body || {};
   let score = Math.max(0, Math.min(100, Number(localScore) || 0));
   let notes = Array.isArray(localNotes) ? localNotes.slice(0, 8) : [];
 
-  const apiKey = process.env.OPENAI_API_KEY; // put in .env
-  if (!apiKey) {
-    return res.json({ score, notes });
-  }
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.json({ score, notes });
 
   try {
     const messages = [
@@ -64,15 +64,14 @@ app.post('/api/grade', async (req, res) => {
         role: 'system',
         content:
           'You are a concise security analyst. Return JSON only: {"score":0..100,"notes":["..."]}. ' +
-          'Keep notes short (max 6), actionable, and non-repetitive. If localScore looks fair, keep it.'
+          'Keep notes short (max 6), actionable, and non-repetitive.'
       },
       {
         role: 'user',
         content:
           `Answers: ${JSON.stringify(answers)}\n` +
           `LocalScore: ${score}\n` +
-          `LocalNotes: ${notes.join(' | ')}\n` +
-          `If you adjust score, explain via notes (brief) and keep within 0..100.`
+          `LocalNotes: ${notes.join(' | ')}\n`
       }
     ];
 
@@ -89,7 +88,7 @@ app.post('/api/grade', async (req, res) => {
       if (typeof ai.score === 'number') score = Math.max(0, Math.min(100, Math.round(ai.score)));
       if (Array.isArray(ai.notes)) notes = ai.notes.slice(0, 6);
     } catch {
-      // invalid JSON from model; keep local
+      // invalid JSON from model
     }
   } catch (e) {
     console.error('AI grading failed:', e);
@@ -97,7 +96,6 @@ app.post('/api/grade', async (req, res) => {
 
   res.json({ score, notes });
 });
-
 
 // ====== GET /stats ======
 app.get("/stats", async (req, res) => {
@@ -116,13 +114,7 @@ app.get("/stats", async (req, res) => {
       {
         $group: {
           _id: "$_id.questionId",
-          options: {
-            $push: {
-              optionLabel: "$_id.optionLabel",
-              optionTag: "$_id.optionTag",
-              count: "$count"
-            }
-          },
+          options: { $push: { optionLabel: "$_id.optionLabel", optionTag: "$_id.optionTag", count: "$count" } },
           total: { $sum: "$count" }
         }
       },
@@ -147,25 +139,22 @@ app.get("/stats", async (req, res) => {
   }
 });
 
-  // Contact Schema
+// ====== Contact Form ======
 const contactSchema = new mongoose.Schema({
   name: String,
   email: String,
   message: String,
   date: { type: Date, default: Date.now }
 });
-
 const Contact = mongoose.model('Contact', contactSchema);
 
-// POST route for Contact Us form
 app.post('/api/contact', async (req, res) => {
   try {
     const { name, email, message } = req.body;
-    if (!name || !email || !message) {
+    if (!name || !email || !message)
       return res.status(400).json({ error: 'All fields required' });
-    }
-    const contact = new Contact({ name, email, message });
-    await contact.save();
+
+    await Contact.create({ name, email, message });
     res.status(201).json({ success: true });
   } catch (error) {
     console.error('Error saving contact form:', error);
@@ -173,6 +162,24 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
+// ====== NEW: NewsAPI route ======
+app.get("/api/news", async (req, res) => {
+  try {
+    const key = process.env.NEWSAPI_KEY;
+    if (!key) return res.status(500).json({ error: "Missing NEWSAPI_KEY" });
 
-// LAN access (optional): change to '0.0.0.0'
-app.listen(3001, () => console.log('API listening on http://localhost:3001'));
+    const q = req.query.q || "cybersecurity";
+    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(q)}&language=en&sortBy=publishedAt&pageSize=5`;
+
+    const r = await fetch(url, { headers: { "X-Api-Key": key, Accept: "application/json" } });
+    const text = await r.text();
+
+    res.status(r.status).setHeader("content-type", "application/json").send(text);
+  } catch (err) {
+    console.error("❌ NewsAPI fetch failed:", err);
+    res.status(500).json({ error: "Failed to fetch news." });
+  }
+});
+
+// ====== Start Server ======
+app.listen(3001, () => console.log('🚀 API running on http://localhost:3001'));
