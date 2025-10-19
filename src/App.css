@@ -368,3 +368,42 @@ a:hover {
 @media (min-width: 641px) and (max-width: 900px) {
   .options { grid-template-columns: 1fr 1fr; }
 }
+/* ===== Mobile: make the top actions horizontally scrollable ===== */
+@media (max-width: 640px) {
+  /* keep the brand on the left, actions on a separate row */
+  .topbar {
+    align-items: flex-start;
+    flex-wrap: nowrap;         /* don't wrap into multiple lines */
+    overflow: hidden;          /* hide any overflow from the bar itself */
+  }
+
+  .brand {
+    flex: 0 0 auto;            /* brand keeps its natural width */
+  }
+
+  .top-actions {
+    flex: 1 1 auto;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    /* horizontal scrolling magic */
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;       /* keep items in one line */
+    -webkit-overflow-scrolling: touch;
+
+    /* a little breathing room so the last button isn't clipped */
+    padding-bottom: 4px;
+    margin-left: 4px;
+
+    /* hide scrollbars (still scrolls with swipe) */
+    scrollbar-width: none;                 /* Firefox */
+  }
+  .top-actions::-webkit-scrollbar { display: none; } /* WebKit */
+
+  /* prevent children from shrinking and keep them inline */
+  .top-actions > * {
+    flex: 0 0 auto;
+  }
+}

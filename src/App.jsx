@@ -1554,5 +1554,6 @@ function CyberNews({ modalClose, initialNews = null }) {
       </div>
     </div>
   );
+  
 }
 /* ----End of Cyber News modal------ */
