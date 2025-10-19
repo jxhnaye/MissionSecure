@@ -434,17 +434,29 @@ export default function App() {
     if (prefetchedNews) return; // Already prefetched
     try {
       const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
-      if (!apiKey) return;
-      const url = `https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5&apiKey=${apiKey}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        setPrefetchedNews(data.articles || []);
+      if (!apiKey) {
+        console.warn("Missing VITE_NEWSAPI_KEY");
+        return;
       }
+  
+      const url =
+        "https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5";
+  
+      const res = await fetch(url, {
+        headers: {
+          "X-Api-Key": apiKey,
+          "Accept": "application/json",
+        },
+      });
+  
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setPrefetchedNews(data.articles || []);
     } catch (e) {
       console.error("Failed to prefetch news:", e);
     }
   };
+  
 
   return (
     <div className="page">
@@ -1422,18 +1434,29 @@ function CyberNews({ modalClose, initialNews = null }) {
     // If we already have initialNews from prefetch, skip fetching
     if (initialNews) return;
     const controller = new AbortController();
+  
     const fetchNews = async () => {
       setLoading(true);
       setError(null);
       try {
         const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
         if (!apiKey) {
-          setError('No NewsAPI key configured. Add VITE_NEWSAPI_KEY to your .env');
+          setError("No NewsAPI key configured. Add VITE_NEWSAPI_KEY to your .env");
           setNews([]);
           return;
         }
-        const url = `https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5&apiKey=${apiKey}`;
-        const res = await fetch(url, { signal: controller.signal });
+  
+        const url =
+          "https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5";
+  
+        const res = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            "X-Api-Key": apiKey,
+            "Accept": "application/json",
+          },
+        });
+  
         if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
         const data = await res.json();
         setNews(data.articles || []);
@@ -1443,9 +1466,11 @@ function CyberNews({ modalClose, initialNews = null }) {
         setLoading(false);
       }
     };
+  
     fetchNews();
     return () => controller.abort();
   }, [initialNews]);
+  
 
   return (
     <div className="modal" role="dialog" aria-modal="true" aria-label="Cyber news">
