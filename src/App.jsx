@@ -154,6 +154,77 @@ function getSessionId() {
   return sid;
 }
 
+/* ---------- Midnight Mode Matrix Rain Effect ---------- */
+let matrixCanvas = null;
+let matrixCtx = null;
+let matrixAnimation = null;
+
+function startMatrixRain() {
+  if (matrixCanvas) return; // Already running
+
+  matrixCanvas = document.createElement('canvas');
+  matrixCanvas.style.position = 'fixed';
+  matrixCanvas.style.top = '0';
+  matrixCanvas.style.left = '0';
+  matrixCanvas.style.width = '100vw';
+  matrixCanvas.style.height = '100vh';
+  matrixCanvas.style.pointerEvents = 'none';
+  matrixCanvas.style.zIndex = '1';
+  matrixCanvas.style.opacity = '0.3';
+  
+  document.body.appendChild(matrixCanvas);
+  
+  matrixCtx = matrixCanvas.getContext('2d');
+  matrixCanvas.width = window.innerWidth;
+  matrixCanvas.height = window.innerHeight;
+  
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*(){}[]|\\:;\"'<>?/~`";
+  const fontSize = 14;
+  const columns = matrixCanvas.width / fontSize;
+  const drops = Array(Math.floor(columns)).fill(1);
+  
+  function drawMatrix() {
+    matrixCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+    
+    matrixCtx.fillStyle = '#00ff41'; // Classic Matrix green
+    matrixCtx.font = fontSize + 'px monospace';
+    
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+      
+      if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+  
+  matrixAnimation = setInterval(drawMatrix, 33); // ~30 FPS
+  
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    if (matrixCanvas) {
+      matrixCanvas.width = window.innerWidth;
+      matrixCanvas.height = window.innerHeight;
+    }
+  });
+}
+
+function stopMatrixRain() {
+  if (matrixAnimation) {
+    clearInterval(matrixAnimation);
+    matrixAnimation = null;
+  }
+  
+  if (matrixCanvas) {
+    document.body.removeChild(matrixCanvas);
+    matrixCanvas = null;
+    matrixCtx = null;
+  }
+}
+
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
   const [view, setView] = useState("landing"); // landing | quiz | results | team
@@ -168,10 +239,54 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [transitioning, setTransitioning] = useState(false);
 
+  // Midnight Mode Easter Egg
+  const [midnightMode, setMidnightMode] = useState(false);
+  const [showMidnightAlert, setShowMidnightAlert] = useState(false);
+
+  // Email Capture for Thank You
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [emailSending, setEmailSending] = useState(false);
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  // Midnight Mode Detection
+  useEffect(() => {
+    const checkMidnightMode = () => {
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      
+      // Activate between 12:00 AM (0:00) and 12:59 AM (0:59)
+      const isMidnight = hour === 0;
+      
+      if (isMidnight && !midnightMode) {
+        setMidnightMode(true);
+        setShowMidnightAlert(true);
+        document.body.classList.add('midnight-mode');
+        startMatrixRain();
+        
+        // Auto-hide alert after 5 seconds
+        setTimeout(() => setShowMidnightAlert(false), 5000);
+      } else if (!isMidnight && midnightMode) {
+        setMidnightMode(false);
+        document.body.classList.remove('midnight-mode');
+        stopMatrixRain();
+      }
+    };
+
+    // Check immediately
+    checkMidnightMode();
+    
+    // Check every minute
+    const interval = setInterval(checkMidnightMode, 60000);
+    
+    return () => clearInterval(interval);
+  }, [midnightMode]);
 
   const total = qs?.length || BASE_QUESTIONS.length;
   const q = useMemo(() => (qs ? qs[idx] : BASE_QUESTIONS[0]), [qs, idx]);
@@ -425,7 +540,46 @@ export default function App() {
       maturityBonus
     });
     setView("results");
+    
+    // Show email capture modal after a short delay
+    setTimeout(() => setShowEmailModal(true), 2000);
   }
+
+  // Email Functions
+  const sendThankYouEmail = async () => {
+    if (!userEmail || !result) return;
+    
+    setEmailSending(true);
+    
+    try {
+      // For now, we'll use a simple approach - you can implement EmailJS later
+      const emailData = {
+        to_email: userEmail,
+        company_name: companyName || 'Your Organization',
+        user_score: result.score,
+        security_level: result.securityLevel,
+        assessment_date: new Date(result.dateISO).toLocaleDateString(),
+        top_recommendations: result.notes?.slice(0, 3).join('\n') || 'Continue following cybersecurity best practices'
+      };
+
+      // Simulate email sending (replace with actual EmailJS call)
+      console.log('Would send email with data:', emailData);
+      
+      // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      alert(`Thank you! We've sent your results to ${userEmail}. Check your inbox!`);
+      setShowEmailModal(false);
+      setUserEmail('');
+      setCompanyName('');
+      
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      alert('Sorry, there was an issue sending the email. Please try again later.');
+    }
+    
+    setEmailSending(false);
+  };
 
   // Cyber news functions
   const onCyberNews = () => setCyberNewsOpen(true);
@@ -451,6 +605,48 @@ export default function App() {
       {/* faint background watermark (kept, non-vite) */}
       <div className="bg-logo" aria-hidden="true"></div>
 
+
+
+      {/* Midnight Mode CSS */}
+      <style jsx>{`
+        .midnight-mode {
+          background: #000000 !important;
+        }
+        
+        .midnight-mode * {
+          text-shadow: 0 0 10px #00ff41;
+        }
+        
+        .midnight-mode .topbar {
+          background: linear-gradient(135deg, #000000, #1a1a1a) !important;
+          border-bottom: 1px solid #00ff41 !important;
+        }
+        
+        .midnight-mode .btn--primary {
+          background: linear-gradient(45deg, #00ff41, #00cc33) !important;
+          color: #000000 !important;
+          box-shadow: 0 0 20px #00ff4140 !important;
+        }
+        
+        .midnight-mode .btn--ghost {
+          border: 1px solid #00ff41 !important;
+          color: #00ff41 !important;
+        }
+        
+        .midnight-mode .btn--ghost:hover {
+          background: #00ff4120 !important;
+        }
+        
+        @keyframes matrixGlow {
+          0% {
+            box-shadow: 0 0 30px #00ff4160, inset 0 0 20px #00ff4120;
+          }
+          100% {
+            box-shadow: 0 0 50px #00ff4180, inset 0 0 30px #00ff4140;
+          }
+        }
+      `}</style>
+
       <Header
         theme={theme}
         setTheme={setTheme}
@@ -471,6 +667,34 @@ export default function App() {
           <div className="cta">
             <button className="btn btn--primary" onClick={start}>Take assessment</button>
           </div>
+
+          {/* Midnight Mode Alert - positioned below Take Assessment */}
+          {showMidnightAlert && (
+            <div 
+              style={{
+                marginTop: '40px',
+                background: 'linear-gradient(45deg, #000000, #1a1a1a)',
+                color: '#00ff41',
+                padding: '25px 35px',
+                borderRadius: '20px',
+                border: '2px solid #00ff41',
+                boxShadow: '0 0 40px #00ff4160, inset 0 0 25px #00ff4120',
+                fontSize: '16px',
+                fontFamily: 'monospace',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                animation: 'matrixGlow 2s ease-in-out infinite alternate',
+                maxWidth: '600px',
+                margin: '40px auto 0'
+              }}
+            >
+              <div style={{ fontSize: '28px', marginBottom: '12px' }}>🕛 MIDNIGHT MODE ACTIVATED 🕛</div>
+              <div style={{ fontSize: '18px', marginBottom: '8px' }}>Welcome to the dark side of cybersecurity...</div>
+              <div style={{ fontSize: '14px', opacity: '0.8', marginTop: '10px' }}>
+                Active until 1:00 AM | Matrix rain enabled | You are now in hacker mode
+              </div>
+            </div>
+          )}
         </section>
       )}
 
@@ -727,6 +951,121 @@ export default function App() {
       {resourcesOpen && <Resources modalClose={() => setResourcesOpen(false)} />}
       {cyberNewsOpen && <CyberNews modalClose={() => setCyberNewsOpen(false)} initialNews={prefetchedNews} />}
 
+      {/* Email Capture Modal */}
+      {showEmailModal && (
+        <div className="modal" role="dialog" aria-modal="true" aria-label="Email Results">
+          <div className="modal__card bubble" style={{
+            maxWidth: "500px",
+            padding: "2rem"
+          }}>
+            <div className="modal__head">
+              <h3 style={{ margin: "0", fontSize: "1.5rem", color: theme === 'light' ? '#17181c' : '#e9e9ef' }}>
+                📧 Get Your Results by Email
+              </h3>
+              <button className="link" onClick={() => setShowEmailModal(false)} aria-label="Close">✕</button>
+            </div>
+
+            <div style={{ marginTop: "1.5rem" }}>
+              <p style={{ 
+                margin: "0 0 1.5rem", 
+                color: theme === 'light' ? '#666' : '#a3a7b3',
+                lineHeight: "1.5"
+              }}>
+                Thank you for taking our cybersecurity assessment! We'd love to send you a copy of your results 
+                and a personalized thank-you message from the Mission Secure team.
+              </p>
+
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={{ 
+                  display: "block", 
+                  marginBottom: "0.5rem", 
+                  fontWeight: "600",
+                  color: theme === 'light' ? '#17181c' : '#e9e9ef'
+                }}>
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  placeholder="your.email@company.com"
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "8px",
+                    border: "1px solid var(--border)",
+                    background: "var(--panel)",
+                    color: "var(--text)",
+                    fontSize: "1rem"
+                  }}
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: "1.5rem" }}>
+                <label style={{ 
+                  display: "block", 
+                  marginBottom: "0.5rem", 
+                  fontWeight: "600",
+                  color: theme === 'light' ? '#17181c' : '#e9e9ef'
+                }}>
+                  Company Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Your Organization"
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem",
+                    borderRadius: "8px",
+                    border: "1px solid var(--border)",
+                    background: "var(--panel)",
+                    color: "var(--text)",
+                    fontSize: "1rem"
+                  }}
+                />
+              </div>
+
+              <div style={{ 
+                background: theme === 'light' ? 'rgba(124, 92, 255, 0.1)' : 'rgba(124, 92, 255, 0.15)', 
+                padding: "1rem", 
+                borderRadius: "8px",
+                marginBottom: "1.5rem",
+                border: theme === 'light' ? '1px solid rgba(124, 92, 255, 0.2)' : '1px solid rgba(124, 92, 255, 0.3)'
+              }}>
+                <p style={{ margin: "0", fontSize: "0.9rem", color: theme === 'light' ? '#17181c' : '#e9e9ef' }}>
+                  🛡️ <strong>Privacy Note:</strong> This is an educational project by LA Tech Org. 
+                  Your email will only be used to send your assessment results and will not be shared or sold.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                <button
+                  className="btn btn--ghost"
+                  onClick={() => setShowEmailModal(false)}
+                  disabled={emailSending}
+                >
+                  Skip
+                </button>
+                <button
+                  className="btn btn--primary"
+                  onClick={sendThankYouEmail}
+                  disabled={!userEmail || emailSending}
+                  style={{
+                    opacity: (!userEmail || emailSending) ? 0.6 : 1,
+                    cursor: (!userEmail || emailSending) ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {emailSending ? '📧 Sending...' : '📧 Send Results'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* optional persistent corner badge */}
       <img
         className="corner-badge"
@@ -977,9 +1316,121 @@ function WhoWeAre({ modalClose, setView }) {
 /* ---------- Team Page ---------- */
 function TeamPage({ onBack, theme }) {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [easterEggModal, setEasterEggModal] = useState(null);
+  const [easterEggCount, setEasterEggCount] = useState({});
   
   const initials = (name) =>
     name.split(/\s+/).filter(Boolean).slice(0,2).map(s=>s[0]).join("").toUpperCase();
+
+  // Easter egg messages for each team member
+  const easterEggMessages = {
+    "⚽": { 
+      messages: [
+        "GOOOAL! ⚽ Benjamin scores for CSUN!",
+        "🏆 Benjamin is dribbling through cybersecurity like Messi!",
+        "⚽ Fun fact: Benjamin can secure a network faster than a penalty kick!"
+      ],
+      color: "#4CAF50"
+    },
+    "🍵": {
+      messages: [
+        "🍵 *sips matcha* Laila is brewing up some data science magic!",
+        "🧠 Matcha + Data Science = Pure genius! That's Laila!",
+        "🍵 Fun fact: Laila's algorithms are as smooth as her matcha lattes!"
+      ],
+      color: "#66BB6A"
+    },
+    "🌟": {
+      messages: [
+        "✨ Aaliyah shines bright like a cybersecurity star!",
+        "🌟 Technology engineering meets stellar personality!",
+        "⭐ Aaliyah: Making Langston University proud, one byte at a time!"
+      ],
+      color: "#FFD700"
+    },
+    "📚": {
+      messages: [
+        "📖 Caroline is the project manager who reads between the lines!",
+        "📚 Adventure awaits! Caroline leads our team on epic coding quests!",
+        "🗺️ Caroline: Navigating project timelines like a literary adventure!"
+      ],
+      color: "#FF7043"
+    },
+    "🏎️": {
+      messages: [
+        "🏁 Jonathan codes at Formula 1 speed! Database queries go VROOM!",
+        "🏈 Touchdown! Jonathan scores with perfect database schemas!",
+        "🏔️ From snowboard slopes to data slopes - Jonathan conquers all!"
+      ],
+      color: "#F44336"
+    },
+    "🕹️": {
+      messages: [
+        "🎮 Miles: Collecting retro tech AND building modern solutions!",
+        "👾 ERROR 404: Miles' vintage game collection not found (it's too massive)!",
+        "🕹️ From Atari to APIs - Miles bridges all eras of technology!"
+      ],
+      color: "#9C27B0"
+    },
+    "🎨": {
+      messages: [
+        "🖌️ Janie paints beautiful code like she paints on canvas!",
+        "📺 Binge-watching shows for 'research' - classic Janie move!",
+        "🎨 Janie: Making frontend interfaces as beautiful as her artwork!"
+      ],
+      color: "#E91E63"
+    },
+    "🎵": {
+      messages: [
+        "🎶 John codes to the rhythm! His backend beats are 🔥!",
+        "🏂 From powder to programming - John shreds code like fresh snow!",
+        "🎤 John's API responses are music to our ears!"
+      ],
+      color: "#3F51B5"
+    },
+    "✈️": {
+      messages: [
+        "🛡️ Rae: Flying high with CyberSloth Security wisdom!",
+        "✈️ Dreaming big and securing bigger! That's the Rae way!",
+        "🎭 Art meets cybersecurity - Rae brings creativity to digital defense!"
+      ],
+      color: "#00BCD4"
+    }
+  };
+
+  const handleEmojiClick = (emoji, memberName) => {
+    const count = (easterEggCount[emoji] || 0) + 1;
+    setEasterEggCount(prev => ({ ...prev, [emoji]: count }));
+    
+    const emojiData = easterEggMessages[emoji];
+    if (emojiData) {
+      const messageIndex = (count - 1) % emojiData.messages.length;
+      const message = emojiData.messages[messageIndex];
+      
+      // Special achievement for persistent clickers
+      if (count === 5) {
+        setEasterEggModal({
+          title: "🏆 ACHIEVEMENT UNLOCKED!",
+          message: `${memberName} Super Fan!`,
+          subtitle: `You've clicked ${emoji} 5 times! You're officially obsessed! 😄`,
+          color: "#FFD700",
+          emoji: "🏆",
+          memberName: memberName,
+          isAchievement: true
+        });
+      } else {
+        setEasterEggModal({
+          title: `${emoji} ${memberName}`,
+          message: message,
+          subtitle: `Click count: ${count} | ${3 - (count % 3)} more for next message`,
+          color: emojiData.color,
+          emoji: emoji,
+          memberName: memberName,
+          isAchievement: false
+        });
+      }
+    }
+  };
 
   return (
     <section className="wrap team-page">
@@ -1000,8 +1451,143 @@ function TeamPage({ onBack, theme }) {
           margin: "0 0 2rem" 
         }}>
           Meet the talented individuals behind Mission Secure's Cyber Hygiene Test.
+          <span style={{ fontSize: "0.9rem", opacity: "0.7", display: "block", marginTop: "0.5rem" }}>
+            💡 Tip: Click on team member emojis for fun surprises! 🎉
+          </span>
         </p>
       </div>
+
+      {/* Easter Egg Modal Popup */}
+      {easterEggModal && (
+        <div 
+          className="modal" 
+          style={{ 
+            position: "fixed", 
+            inset: 0, 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            background: "rgba(0, 0, 0, 0.7)", 
+            zIndex: 2000,
+            padding: "2rem",
+            animation: "fadeIn 0.3s ease-out"
+          }}
+          onClick={() => setEasterEggModal(null)}
+        >
+          <div 
+            style={{
+              background: "var(--panel)",
+              borderRadius: "1.5rem",
+              padding: "2rem",
+              maxWidth: "450px",
+              width: "90%",
+              textAlign: "center",
+              border: `3px solid ${easterEggModal.color}`,
+              boxShadow: `0 10px 40px rgba(0,0,0,0.3), 0 0 20px ${easterEggModal.color}40`,
+              animation: "bounceIn 0.4s ease-out",
+              position: "relative"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              style={{
+                position: "absolute",
+                top: "1rem",
+                right: "1rem",
+                background: "rgba(255, 255, 255, 0.1)",
+                color: "var(--text)",
+                border: "1px solid var(--border)",
+                borderRadius: "50%",
+                width: "2.5rem",
+                height: "2.5rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                fontSize: "1.2rem",
+                transition: "all 0.2s ease"
+              }}
+              onClick={() => setEasterEggModal(null)}
+              onMouseEnter={(e) => {
+                e.target.style.background = "rgba(255, 255, 255, 0.2)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "rgba(255, 255, 255, 0.1)";
+              }}
+            >
+              ×
+            </button>
+
+            {/* Large emoji */}
+            <div style={{ 
+              fontSize: "4rem", 
+              marginBottom: "1rem",
+              filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))"
+            }}>
+              {easterEggModal.emoji}
+            </div>
+
+            {/* Title */}
+            <h3 style={{ 
+              margin: "0 0 1rem", 
+              color: easterEggModal.color,
+              fontSize: easterEggModal.isAchievement ? "1.8rem" : "1.5rem",
+              fontWeight: "800"
+            }}>
+              {easterEggModal.title}
+            </h3>
+
+            {/* Main message */}
+            <p style={{ 
+              margin: "0 0 1rem", 
+              fontSize: "1.1rem",
+              lineHeight: "1.5",
+              color: "var(--text)",
+              fontWeight: "600"
+            }}>
+              {easterEggModal.message}
+            </p>
+
+            {/* Subtitle */}
+            <p style={{ 
+              margin: "0 0 1.5rem", 
+              fontSize: "0.9rem",
+              color: "var(--muted)",
+              opacity: "0.8"
+            }}>
+              {easterEggModal.subtitle}
+            </p>
+
+            {/* Action button */}
+            <button
+              style={{
+                background: `linear-gradient(45deg, ${easterEggModal.color}, ${easterEggModal.color}DD)`,
+                color: "white",
+                border: "none",
+                borderRadius: "0.75rem",
+                padding: "0.75rem 1.5rem",
+                fontSize: "1rem",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                boxShadow: `0 4px 15px ${easterEggModal.color}40`
+              }}
+              onClick={() => setEasterEggModal(null)}
+              onMouseEnter={(e) => {
+                e.target.style.transform = "translateY(-2px)";
+                e.target.style.boxShadow = `0 6px 20px ${easterEggModal.color}60`;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow = `0 4px 15px ${easterEggModal.color}40`;
+              }}
+            >
+              {easterEggModal.isAchievement ? "Awesome! 🎉" : "Got it! 😊"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="team-grid" style={{
         display: "grid",
@@ -1030,17 +1616,34 @@ function TeamPage({ onBack, theme }) {
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            {/* Large emoji decoration on the right */}
+            {/* Large emoji decoration on the right - Now clickable! */}
             {member.emoji && (
-              <div style={{
-                position: "absolute",
-                top: "1rem",
-                right: "1rem",
-                fontSize: "4rem",
-                opacity: "0.6",
-                pointerEvents: "none",
-                zIndex: 1
-              }}>
+              <div 
+                style={{
+                  position: "absolute",
+                  top: "1rem",
+                  right: "1rem",
+                  fontSize: "4rem",
+                  opacity: "0.6",
+                  cursor: "pointer",
+                  zIndex: 2,
+                  transition: "all 0.2s ease",
+                  userSelect: "none"
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEmojiClick(member.emoji, member.name);
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.opacity = "1";
+                  e.target.style.transform = "scale(1.1) rotate(10deg)";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.opacity = "0.6";
+                  e.target.style.transform = "scale(1) rotate(0deg)";
+                }}
+                title={`Click ${member.emoji} for a surprise! 🎉`}
+              >
                 {member.emoji}
               </div>
             )}
@@ -1296,6 +1899,31 @@ function TeamPage({ onBack, theme }) {
           </div>
         </div>
       )}
+
+      {/* CSS Animation Styles */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes bounceIn {
+          0% {
+            transform: scale(0.3);
+            opacity: 0;
+          }
+          50% {
+            transform: scale(1.05);
+          }
+          70% {
+            transform: scale(0.9);
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </section>
   );
 }
