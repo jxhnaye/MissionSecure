@@ -434,29 +434,17 @@ export default function App() {
     if (prefetchedNews) return; // Already prefetched
     try {
       const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
-      if (!apiKey) {
-        console.warn("Missing VITE_NEWSAPI_KEY");
-        return;
+      if (!apiKey) return;
+      const url = `https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5&apiKey=${apiKey}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setPrefetchedNews(data.articles || []);
       }
-  
-      const url =
-        "https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5";
-  
-      const res = await fetch(url, {
-        headers: {
-          "X-Api-Key": apiKey,
-          "Accept": "application/json",
-        },
-      });
-  
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setPrefetchedNews(data.articles || []);
     } catch (e) {
       console.error("Failed to prefetch news:", e);
     }
   };
-  
 
   return (
     <div className="page">
@@ -751,24 +739,24 @@ export default function App() {
 }
 
 /* ---------- UI Pieces ---------- */
-
 function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefetchNews, onStart }) {
   return (
     <header className="topbar">
-      <div className="brand">
-        <img
-          src={theme === "light" ? lightLogo : darkLogo}
-          alt="Mission Secure"
-          className="logo"
-        />
-        <h2>
-          Cyber Hygiene Test <span className="by">by Mission Secure</span>
-        </h2>
-      </div>
+      <div className="rail">
+        <div className="brand">
+          <img
+            src={theme === "light" ? lightLogo : darkLogo}
+            alt="Mission Secure"
+            className="logo"
+          />
+          <h2>
+            Cyber Hygiene Test <span className="by">by Mission Secure</span>
+          </h2>
+        </div>
 
-      {/* Scrollable actions strip on mobile */}
-      <div className="top-actions">
+        {/* everything below scrolls together with the brand */}
         <ContactUs />
+
         <button
           className="btn btn--ghost"
           onClick={onCyberNews}
@@ -777,6 +765,7 @@ function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefe
         >
           <span role="img" aria-label="newspaper">📰</span> Latest Cyber News
         </button>
+
         <button className="btn btn--ghost" onClick={onWhoWeAre}>Who We Are</button>
         <button className="btn btn--primary" onClick={onStart}>Take assessment</button>
         <button className="btn btn--ghost" onClick={onResources}>Resources</button>
@@ -1437,29 +1426,18 @@ function CyberNews({ modalClose, initialNews = null }) {
     // If we already have initialNews from prefetch, skip fetching
     if (initialNews) return;
     const controller = new AbortController();
-  
     const fetchNews = async () => {
       setLoading(true);
       setError(null);
       try {
         const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
         if (!apiKey) {
-          setError("No NewsAPI key configured. Add VITE_NEWSAPI_KEY to your .env");
+          setError('No NewsAPI key configured. Add VITE_NEWSAPI_KEY to your .env');
           setNews([]);
           return;
         }
-  
-        const url =
-          "https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5";
-  
-        const res = await fetch(url, {
-          signal: controller.signal,
-          headers: {
-            "X-Api-Key": apiKey,
-            "Accept": "application/json",
-          },
-        });
-  
+        const url = `https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5&apiKey=${apiKey}`;
+        const res = await fetch(url, { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
         const data = await res.json();
         setNews(data.articles || []);
@@ -1469,11 +1447,9 @@ function CyberNews({ modalClose, initialNews = null }) {
         setLoading(false);
       }
     };
-  
     fetchNews();
     return () => controller.abort();
   }, [initialNews]);
-  
 
   return (
     <div className="modal" role="dialog" aria-modal="true" aria-label="Cyber news">
@@ -1557,6 +1533,5 @@ function CyberNews({ modalClose, initialNews = null }) {
       </div>
     </div>
   );
-  
 }
 /* ----End of Cyber News modal------ */

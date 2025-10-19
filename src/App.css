@@ -65,21 +65,53 @@ body{
   z-index: 1;
 }
 
-/* Top bar */
+/* Top bar (fixed) */
 .topbar{
   position:fixed; inset:0 0 auto 0; z-index:10;
   display:flex; align-items:center; justify-content:space-between; gap:12px;
   padding:10px clamp(12px,4vw,24px);
   background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,0));
   backdrop-filter: blur(4px);
+  overflow: hidden; /* hide scrollbars container edges */
 }
-.brand{ display:flex; align-items:center; gap:10px }
+.brand{ display:flex; align-items:center; gap:10px; min-width:0 }
 .logo{ height:22px; aspect-ratio:1; color:var(--text); opacity:.9 }
 .logo.vite{ height:18px; opacity:.9; vertical-align:middle }
-.brand h2{ margin:0; font-size:1.05rem; letter-spacing:.2px }
+.brand h2{
+  margin:0; font-size:1.05rem; letter-spacing:.2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:58vw;
+}
 .by{ color:var(--muted); font-weight:600; margin-left:.35rem }
 .powered{ color:var(--muted); font-weight:600; margin-left:.4rem; display:inline-flex; gap:.35rem; align-items:center }
 .powered .dot{ opacity:.5 }
+
+/* === Horizontal-scroll rail (brand + buttons) === */
+.topbar .rail{
+  display:flex; align-items:center; gap:12px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none; /* Firefox hide */
+  width:100%;
+}
+.topbar .rail::-webkit-scrollbar{ display:none }
+.topbar .rail > *{ flex:0 0 auto }
+
+/* Fallback: if you didn't wrap with .rail, keep .top-actions scrollable */
+.top-actions{
+  display:flex; gap:16px; align-items:center;
+}
+@media (max-width: 640px){
+  .top-actions{
+    overflow-x:auto; -webkit-overflow-scrolling:touch; white-space:nowrap;
+    scrollbar-width:none; padding-bottom:4px;
+  }
+  .top-actions::-webkit-scrollbar{ display:none }
+}
+
+/* Tighter brand on very small screens */
+@media (max-width: 420px){
+  .brand h2{ max-width:50vw; font-size:clamp(0.9rem, 3.8vw, 1.05rem) }
+  .brand .by{ display:none }
+}
 
 /* Hero logos on landing */
 .hero-logos{ display:flex; align-items:center; gap:10px; margin-bottom:.5rem }
@@ -332,122 +364,11 @@ a:hover {
   margin-top: 1.5rem;   /* adjust value as needed */
 }
 
-/* ===== Mobile-only tweaks layered on top of your styles ===== */
-@media (max-width: 640px) {
-  /* Landing hero spacing */
-  .landing .title { margin-bottom: 0.25rem; }
-  .landing .cta   { gap: 8px; }
-
-  /* Keep logos crisp but not oversized */
-  .logo         { height: 40px; }
-  .landing-logo { height: 80px; }
-
-  /* Topbar compact on wrap */
-  .topbar { row-gap: 6px; }
-
-  /* Lists in modals: comfortable reading width */
-  .about-list { margin-left: 0.75rem; }
-
-  /* Notes list spacing */
-  .notes li { margin: 0.35rem 0; }
-
-  /* Ensure any grid-y content stacks by default on phones */
-  .category-breakdown .grid,
-  .industry-comparison .grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
+/* ===== Mobile: horizontally scroll the full top row as a rail ===== */
+@media (max-width: 640px){
+  .topbar{
+    padding-right: 12px; /* give thumb room for scroll */
   }
-
-  /* Make grouped CTA buttons stack full-width when tight */
-  .cta { width: 100%; }
-  .cta .btn { width: 100%; }
-}
-
-/* Small tablets: allow 2 columns for options if space permits */
-@media (min-width: 641px) and (max-width: 900px) {
-  .options { grid-template-columns: 1fr 1fr; }
-}
-/* ===== Mobile: make the top actions horizontally scrollable ===== */
-@media (max-width: 640px) {
-  /* keep the brand on the left, actions on a separate row */
-  .topbar {
-    align-items: flex-start;
-    flex-wrap: nowrap;         /* don't wrap into multiple lines */
-    overflow: hidden;          /* hide any overflow from the bar itself */
-  }
-
-  .brand {
-    flex: 0 0 auto;            /* brand keeps its natural width */
-  }
-
-  .top-actions {
-    flex: 1 1 auto;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-
-    /* horizontal scrolling magic */
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;       /* keep items in one line */
-    -webkit-overflow-scrolling: touch;
-
-    /* a little breathing room so the last button isn't clipped */
-    padding-bottom: 4px;
-    margin-left: 4px;
-
-    /* hide scrollbars (still scrolls with swipe) */
-    scrollbar-width: none;                 /* Firefox */
-  }
-  .top-actions::-webkit-scrollbar { display: none; } /* WebKit */
-
-  /* prevent children from shrinking and keep them inline */
-  .top-actions > * {
-    flex: 0 0 auto;
-  }
-}
-/* ===== Mobile: horizontally scroll the top actions strip ===== */
-@media (max-width: 640px) {
-  .topbar {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    flex-wrap: nowrap;
-  }
-
-  .brand { flex: 0 0 auto; }
-
-  .top-actions {
-    flex: 1 1 auto;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    overflow-x: auto;           /* horizontal scroll */
-    overflow-y: hidden;
-    white-space: nowrap;        /* keep everything on one line */
-    -webkit-overflow-scrolling: touch;
-
-    padding-bottom: 4px;
-    margin-left: 4px;
-
-    scrollbar-width: none;      /* Firefox: hide bar (still scrolls) */
-  }
-  .top-actions::-webkit-scrollbar { display: none; } /* WebKit */
-
-  /* Prevent children (like a form or wide button) from stretching */
-  .top-actions > * {
-    flex: 0 0 auto;             /* don't grow/shrink */
-    max-width: none;
-  }
-
-  /* If ContactUs drops a <form> directly, keep it inline-sized */
-  .top-actions form {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    width: auto;
-    max-width: none;
-  }
+  /* Title sizing already handled via clamp; keep everything in one line */
+  .topbar .rail > *{ max-width:none }
 }
