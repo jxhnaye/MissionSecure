@@ -66,11 +66,66 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
-  html, body, #root { height: 100%; }
+
+html, body, #root { height: 100%; }
 #root {
   min-height: 100dvh;        /* full viewport height */
   display: grid;
   place-items: center;        /* centers horizontally + vertically */
   margin: 0;                  /* kill default margins */
   padding: 2rem;
+}
+
+/* ===== Mobile-only layout helpers (no desktop changes) ===== */
+@media (max-width: 640px) {
+  /* Prevent side-scroll and give breathing room */
+  html, body { overflow-x: hidden; }
+  #root { padding: 1rem; place-items: start; }
+
+  /* Container width without altering your .wrap visuals */
+  .wrap {
+    width: calc(100% - 24px);
+    margin: 84px auto 28px; /* a bit tighter on phones */
+  }
+
+  /* Top bar wraps cleanly on narrow screens */
+  .topbar {
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+  }
+  .brand { flex: 1 1 100%; }
+  .brand h2 { font-size: 0.98rem; }
+
+  /* Buttons remain your style but become full-width when grouped */
+  .cta { width: 100%; }
+  .cta .btn { width: 100%; }
+
+  /* Quiz options: single column, full width, easier tapping */
+  .options { grid-template-columns: 1fr; gap: 12px; }
+  .option  { width: 100%; padding: 0.95rem 1rem; }
+
+  /* Score header & bars stay readable */
+  .score__bar { height: 12px; }
+  .score__legend { font-size: 0.9rem; }
+
+  /* Modals scale to viewport; internal scroll if needed */
+  .modal__card {
+    width: min(92vw, 700px);
+    max-height: 85vh;
+    padding: 0.9rem 1rem;
+  }
+
+  /* Background marks smaller so they don’t crowd content */
+  .bg-logo { width: min(42vw, 200px); height: min(42vw, 200px); right: -40px; }
+  .bg-vite { width: min(38vw, 180px); height: min(38vw, 180px); left: -36px;  }
+
+  /* Images never overflow */
+  img { max-width: 100%; height: auto; }
+}
+
+/* Slightly larger phones / small tablets */
+@media (min-width: 641px) and (max-width: 900px) {
+  .wrap { width: calc(100% - 36px); }
+  .options { grid-template-columns: 1fr 1fr; gap: 12px; }
 }
