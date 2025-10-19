@@ -407,3 +407,47 @@ a:hover {
     flex: 0 0 auto;
   }
 }
+/* ===== Mobile: horizontally scroll the top actions strip ===== */
+@media (max-width: 640px) {
+  .topbar {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .brand { flex: 0 0 auto; }
+
+  .top-actions {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    overflow-x: auto;           /* horizontal scroll */
+    overflow-y: hidden;
+    white-space: nowrap;        /* keep everything on one line */
+    -webkit-overflow-scrolling: touch;
+
+    padding-bottom: 4px;
+    margin-left: 4px;
+
+    scrollbar-width: none;      /* Firefox: hide bar (still scrolls) */
+  }
+  .top-actions::-webkit-scrollbar { display: none; } /* WebKit */
+
+  /* Prevent children (like a form or wide button) from stretching */
+  .top-actions > * {
+    flex: 0 0 auto;             /* don't grow/shrink */
+    max-width: none;
+  }
+
+  /* If ContactUs drops a <form> directly, keep it inline-sized */
+  .top-actions form {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: auto;
+    max-width: none;
+  }
+}

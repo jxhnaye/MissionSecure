@@ -766,9 +766,10 @@ function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefe
         </h2>
       </div>
 
-      <div className="top-actions" style={{ display:'flex', gap:16, alignItems:'center' }}>
-      <ContactUs />
-         <button
+      {/* Scrollable actions strip on mobile */}
+      <div className="top-actions">
+        <ContactUs />
+        <button
           className="btn btn--ghost"
           onClick={onCyberNews}
           onMouseEnter={onPrefetchNews}
@@ -779,6 +780,7 @@ function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefe
         <button className="btn btn--ghost" onClick={onWhoWeAre}>Who We Are</button>
         <button className="btn btn--primary" onClick={onStart}>Take assessment</button>
         <button className="btn btn--ghost" onClick={onResources}>Resources</button>
+
         <div className="theme-toggle" aria-label="Theme toggle">
           <input
             id="themeSwitch"
@@ -795,6 +797,7 @@ function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefe
     </header>
   );
 }
+
 
 function BigNumber({ value, hue }) {
   const color = `hsl(${hue} 85% 55%)`;
