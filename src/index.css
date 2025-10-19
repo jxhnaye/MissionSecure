@@ -74,3 +74,18 @@ button:focus-visible {
   margin: 0;                  /* kill default margins */
   padding: 2rem;
 }
+/* --- Mobile-friendly brand title --- */
+.topbar .brand { min-width: 0; }               /* allow flex children to shrink */
+.topbar .brand h2{
+  margin: 0;
+  font-size: clamp(0.9rem, 3.8vw, 1.05rem);    /* scales down on small screens */
+  white-space: nowrap;                          /* single line */
+  overflow: hidden;                             /* allow ellipsis */
+  text-overflow: ellipsis;
+  max-width: 58vw;                              /* prevent pushing the buttons */
+}
+
+@media (max-width: 420px){
+  .topbar .brand h2{ max-width: 50vw; }
+  .topbar .brand .by{ display: none; }         /* hide “by Mission Secure” if super tight */
+}

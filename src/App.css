@@ -1,4 +1,3 @@
-
 /* ===== Theme (dark default) ===== */
 :root{
   --bg-1:#0f111a; --bg-2:#1b1f3b; --text:#e9e9ef; --muted:#a3a7b3;
@@ -66,21 +65,53 @@ body{
   z-index: 1;
 }
 
-/* Top bar */
+/* Top bar (fixed) */
 .topbar{
   position:fixed; inset:0 0 auto 0; z-index:10;
   display:flex; align-items:center; justify-content:space-between; gap:12px;
   padding:10px clamp(12px,4vw,24px);
   background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,0));
   backdrop-filter: blur(4px);
+  overflow: hidden; /* hide scrollbars container edges */
 }
-.brand{ display:flex; align-items:center; gap:10px }
+.brand{ display:flex; align-items:center; gap:10px; min-width:0 }
 .logo{ height:22px; aspect-ratio:1; color:var(--text); opacity:.9 }
 .logo.vite{ height:18px; opacity:.9; vertical-align:middle }
-.brand h2{ margin:0; font-size:1.05rem; letter-spacing:.2px }
+.brand h2{
+  margin:0; font-size:1.05rem; letter-spacing:.2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:58vw;
+}
 .by{ color:var(--muted); font-weight:600; margin-left:.35rem }
 .powered{ color:var(--muted); font-weight:600; margin-left:.4rem; display:inline-flex; gap:.35rem; align-items:center }
 .powered .dot{ opacity:.5 }
+
+/* === Horizontal-scroll rail (brand + buttons) === */
+.topbar .rail{
+  display:flex; align-items:center; gap:12px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none; /* Firefox hide */
+  width:100%;
+}
+.topbar .rail::-webkit-scrollbar{ display:none }
+.topbar .rail > *{ flex:0 0 auto }
+
+/* Fallback: if you didn't wrap with .rail, keep .top-actions scrollable */
+.top-actions{
+  display:flex; gap:16px; align-items:center;
+}
+@media (max-width: 640px){
+  .top-actions{
+    overflow-x:auto; -webkit-overflow-scrolling:touch; white-space:nowrap;
+    scrollbar-width:none; padding-bottom:4px;
+  }
+  .top-actions::-webkit-scrollbar{ display:none }
+}
+
+/* Tighter brand on very small screens */
+@media (max-width: 420px){
+  .brand h2{ max-width:50vw; font-size:clamp(0.9rem, 3.8vw, 1.05rem) }
+  .brand .by{ display:none }
+}
 
 /* Hero logos on landing */
 .hero-logos{ display:flex; align-items:center; gap:10px; margin-bottom:.5rem }
@@ -333,3 +364,11 @@ a:hover {
   margin-top: 1.5rem;   /* adjust value as needed */
 }
 
+/* ===== Mobile: horizontally scroll the full top row as a rail ===== */
+@media (max-width: 640px){
+  .topbar{
+    padding-right: 12px; /* give thumb room for scroll */
+  }
+  /* Title sizing already handled via clamp; keep everything in one line */
+  .topbar .rail > *{ max-width:none }
+}

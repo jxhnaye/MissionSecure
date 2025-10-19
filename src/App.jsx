@@ -1078,24 +1078,25 @@ export default function App() {
 }
 
 /* ---------- UI Pieces ---------- */
-
 function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefetchNews, onStart }) {
   return (
     <header className="topbar">
-      <div className="brand">
-        <img
-          src={theme === "light" ? lightLogo : darkLogo}
-          alt="Mission Secure"
-          className="logo"
-        />
-        <h2>
-          Cyber Hygiene Test <span className="by">by Mission Secure</span>
-        </h2>
-      </div>
+      <div className="rail">
+        <div className="brand">
+          <img
+            src={theme === "light" ? lightLogo : darkLogo}
+            alt="Mission Secure"
+            className="logo"
+          />
+          <h2>
+            Cyber Hygiene Test <span className="by">by Mission Secure</span>
+          </h2>
+        </div>
 
-      <div className="top-actions" style={{ display:'flex', gap:16, alignItems:'center' }}>
-      <ContactUs />
-         <button
+        {/* everything below scrolls together with the brand */}
+        <ContactUs />
+
+        <button
           className="btn btn--ghost"
           onClick={onCyberNews}
           onMouseEnter={onPrefetchNews}
@@ -1103,9 +1104,11 @@ function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefe
         >
           <span role="img" aria-label="newspaper">📰</span> Latest Cyber News
         </button>
+
         <button className="btn btn--ghost" onClick={onWhoWeAre}>Who We Are</button>
         <button className="btn btn--primary" onClick={onStart}>Take assessment</button>
         <button className="btn btn--ghost" onClick={onResources}>Resources</button>
+
         <div className="theme-toggle" aria-label="Theme toggle">
           <input
             id="themeSwitch"
@@ -1122,6 +1125,7 @@ function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefe
     </header>
   );
 }
+
 
 function BigNumber({ value, hue }) {
   const color = `hsl(${hue} 85% 55%)`;
