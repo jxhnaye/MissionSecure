@@ -563,7 +563,7 @@ export default function App() {
 
       const templateParams = {
         user_email: userEmail,
-        company_name: companyName || 'Your Organization',
+        company_name: companyName && companyName.trim() ? companyName : '',
         assessment_score: result.score,
         security_level: result.securityLevel,
         assessment_date: new Date(result.dateISO).toLocaleDateString()
