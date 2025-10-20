@@ -68,13 +68,13 @@ body{
 /* Top bar (fixed) */
 .topbar{
   position:fixed; inset:0 0 auto 0; z-index:10;
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  display:flex; align-items:center; gap:24px;
   padding:10px clamp(12px,4vw,24px);
   background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,0));
   backdrop-filter: blur(4px);
   overflow: hidden; /* hide scrollbars container edges */
 }
-.brand{ display:flex; align-items:center; gap:10px; min-width:0 }
+.brand{ display:flex; align-items:center; gap:10px; min-width:0; margin-right:auto; }
 .logo{ height:22px; aspect-ratio:1; color:var(--text); opacity:.9 }
 .logo.vite{ height:18px; opacity:.9; vertical-align:middle }
 .brand h2{
@@ -364,11 +364,91 @@ a:hover {
   margin-top: 1.5rem;   /* adjust value as needed */
 }
 
-/* ===== Mobile: horizontally scroll the full top row as a rail ===== */
-@media (max-width: 640px){
-  .topbar{
-    padding-right: 12px; /* give thumb room for scroll */
+/* ===== Desktop Header Layout ===== */
+/* Default rail - desktop layout */
+.topbar .rail {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  flex: 1;
+  overflow: visible;
+  flex-wrap: nowrap;
+}
+
+.topbar .rail > * {
+  flex: 0 0 auto;
+}
+
+/* Ensure desktop layout stays clean */
+@media (min-width: 769px) {
+  .topbar .rail {
+    overflow: visible;
+    white-space: normal;
+    gap: 16px;
+    justify-content: flex-end;
   }
-  /* Title sizing already handled via clamp; keep everything in one line */
-  .topbar .rail > *{ max-width:none }
+  
+  .topbar .rail > * {
+    flex-shrink: 0;
+  }
+}
+
+/* ===== Mobile Menu Styles ===== */
+.mobile-menu-modal {
+  z-index: 1000;
+}
+
+.mobile-menu-card {
+  width: min(400px, calc(100% - 32px));
+  margin: 16px;
+  position: fixed;
+  top: 80px;
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.mobile-menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.mobile-menu-btn {
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.mobile-menu-theme {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Hide horizontal scroll on mobile, show menu instead */
+@media (max-width: 768px) {
+  .topbar .rail > *:not(.brand) {
+    display: none;
+  }
+  
+  .brand {
+    position: relative;
+  }
+  
+  .brand::after {
+    content: "☰";
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    color: var(--text);
+    opacity: 0.7;
+  }
 }

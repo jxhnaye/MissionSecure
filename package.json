@@ -11,6 +11,7 @@
     "api": "node server.mjs"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "better-sqlite3": "^12.4.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

@@ -11,6 +11,7 @@ import johnPhoto from "./assets/team/john.jpg.png";
 import jonathanPhoto from "./assets/team/jonathan.jpg.png";
 import { v4 as uuidv4 } from "uuid";
 import ContactUs from "./ContactUs";
+import emailjs from '@emailjs/browser';
 
 
 /** ========= Base 10 questions (best=1, iffy=0.5, bad=0) ========= */
@@ -248,6 +249,9 @@ export default function App() {
   const [userEmail, setUserEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [emailSending, setEmailSending] = useState(false);
+
+  // Mobile Menu
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -552,21 +556,21 @@ export default function App() {
     setEmailSending(true);
     
     try {
-      // For now, we'll use a simple approach - you can implement EmailJS later
-      const emailData = {
-        to_email: userEmail,
+      // EmailJS configuration
+      const serviceId = 'service_zp1s8kn';
+      const templateId = 'template_2qd8uas';
+      const publicKey = 'dqeHV_5inh7XPvunn';
+
+      const templateParams = {
+        user_email: userEmail,
         company_name: companyName || 'Your Organization',
-        user_score: result.score,
+        assessment_score: result.score,
         security_level: result.securityLevel,
-        assessment_date: new Date(result.dateISO).toLocaleDateString(),
-        top_recommendations: result.notes?.slice(0, 3).join('\n') || 'Continue following cybersecurity best practices'
+        assessment_date: new Date(result.dateISO).toLocaleDateString()
       };
 
-      // Simulate email sending (replace with actual EmailJS call)
-      console.log('Would send email with data:', emailData);
-      
-      // Simulate delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Send email using EmailJS
+      await emailjs.send(serviceId, templateId, templateParams, publicKey);
       
       alert(`Thank you! We've sent your results to ${userEmail}. Check your inbox!`);
       setShowEmailModal(false);
@@ -655,7 +659,89 @@ export default function App() {
         onCyberNews={onCyberNews}
         onPrefetchNews={onPrefetchNews}
         onStart={start}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
       />
+
+      {/* Mobile Menu Modal */}
+      {mobileMenuOpen && (
+        <div className="modal mobile-menu-modal" onClick={() => setMobileMenuOpen(false)}>
+          <div className="modal__card mobile-menu-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal__head">
+              <h3>Menu</h3>
+              <button 
+                onClick={() => setMobileMenuOpen(false)} 
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text)',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  padding: '4px 8px'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div className="mobile-menu-items">
+              <ContactUs />
+              <button
+                className="btn btn--ghost mobile-menu-btn"
+                onClick={() => {
+                  onCyberNews();
+                  setMobileMenuOpen(false);
+                }}
+                onMouseEnter={onPrefetchNews}
+                onFocus={onPrefetchNews}
+              >
+                <span role="img" aria-label="newspaper">📰</span> Latest Cyber News
+              </button>
+              <button 
+                className="btn btn--ghost mobile-menu-btn" 
+                onClick={() => {
+                  setWhoWeAreOpen(true);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Who We Are
+              </button>
+              <button 
+                className="btn btn--primary mobile-menu-btn" 
+                onClick={() => {
+                  start();
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Take assessment
+              </button>
+              <button 
+                className="btn btn--ghost mobile-menu-btn" 
+                onClick={() => {
+                  setResourcesOpen(true);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Resources
+              </button>
+              <div className="mobile-menu-theme">
+                <span style={{ marginRight: '1rem', color: 'var(--text)' }}>Theme:</span>
+                <div className="theme-toggle" aria-label="Theme toggle">
+                  <input
+                    id="mobileThemeSwitch"
+                    type="checkbox"
+                    checked={theme === "light"}
+                    onChange={e => setTheme(e.target.checked ? "light" : "dark")}
+                  />
+                  <label htmlFor="mobileThemeSwitch" title="Light / Dark">
+                    <span className="sun">☀️</span>
+                    <span className="moon">🌙</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {view === "landing" && (
         <section className="wrap landing">
@@ -1078,11 +1164,15 @@ export default function App() {
 }
 
 /* ---------- UI Pieces ---------- */
-function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefetchNews, onStart }) {
+function Header({ theme, setTheme, onWhoWeAre, onResources, onCyberNews, onPrefetchNews, onStart, mobileMenuOpen, setMobileMenuOpen }) {
   return (
     <header className="topbar">
       <div className="rail">
-        <div className="brand">
+        <div 
+          className="brand" 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          style={{ cursor: 'pointer' }}
+        >
           <img
             src={theme === "light" ? lightLogo : darkLogo}
             alt="Mission Secure"
