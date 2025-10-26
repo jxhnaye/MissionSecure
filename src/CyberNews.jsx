@@ -15,17 +15,30 @@ function CyberNews({ modalClose, initialNews = null }) {
       try {
         const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
         if (!apiKey) {
-          setError('No NewsAPI key configured. Add VITE_NEWSAPI_KEY to your .env');
+          setError('News feature temporarily unavailable');
           setNews([]);
           return;
         }
         const url = `https://newsapi.org/v2/everything?q=cybersecurity&language=en&sortBy=publishedAt&pageSize=5&apiKey=${apiKey}`;
         const res = await fetch(url, { signal: controller.signal });
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+        if (!res.ok) {
+          // Handle different HTTP errors with user-friendly messages
+          if (res.status === 426) {
+            throw new Error('News service requires upgrade');
+          } else if (res.status === 429) {
+            throw new Error('News service rate limit exceeded');
+          } else if (res.status === 401 || res.status === 403) {
+            throw new Error('News service authentication failed');
+          } else {
+            throw new Error('News service temporarily unavailable');
+          }
+        }
         const data = await res.json();
         setNews(data.articles || []);
       } catch (e) {
-        if (e.name !== "AbortError") setError(e.message || "Unknown error");
+        if (e.name !== "AbortError") {
+          setError('News feature temporarily unavailable');
+        }
       } finally {
         setLoading(false);
       }
@@ -61,7 +74,23 @@ function CyberNews({ modalClose, initialNews = null }) {
             }
           `}</style>
           {loading && <div style={{ padding: "1rem", textAlign: "center" }}>Loading news...</div>}
-          {error && <div style={{ color: "red", padding: "1rem", textAlign: "center" }}>Error: {error}</div>}
+          {error && (
+            <div style={{ 
+              padding: "1.5rem", 
+              textAlign: "center",
+              background: "rgba(255, 193, 7, 0.1)",
+              borderRadius: "8px",
+              border: "1px solid rgba(255, 193, 7, 0.3)"
+            }}>
+              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📰</div>
+              <div style={{ color: "var(--text)", marginBottom: "0.5rem" }}>News Feature Unavailable</div>
+              <div style={{ fontSize: "0.9rem", color: "var(--muted)" }}>
+                The cybersecurity news feed is temporarily unavailable. Please check back later!
+                <br /><br />
+                <strong>💡 Alternative:</strong> Visit <a href="https://www.cisa.gov/news-events" target="_blank" rel="noopener noreferrer" style={{color: "hsl(240, 100%, 70%)"}}>CISA News</a> for the latest cybersecurity updates.
+              </div>
+            </div>
+          )}
           {!loading && !error && !news.length && <div style={{ padding: "1rem", textAlign: "center" }}>No recent articles found.</div>}
 
           {!loading && !error && news.length > 0 && (

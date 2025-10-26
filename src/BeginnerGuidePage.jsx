@@ -19,12 +19,76 @@ function BeginnerGuidePage({ onBack, theme }) {
         </div>
 
         <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+          <h4>🤓 New to Cybersecurity? Start Here</h4>
+          <p style={{ marginBottom: "1rem", color: "var(--text-muted)" }}>
+            If you're completely new, here's where to begin:
+          </p>
+          <div style={{ background: "var(--success-bg)", border: "1px solid var(--success-border)", borderRadius: "8px", padding: "1rem", margin: "1rem 0" }}>
+            <ol style={{ margin: "0", paddingLeft: "1.2rem" }}>
+              <li><strong>Understand the Basics:</strong> Learn what terms like "phishing," "malware," and "encryption" mean.</li>
+              <li><strong>Secure Your Devices:</strong> Update your phone, computer, and apps regularly.</li>
+              <li><strong>Use a Password Manager:</strong> It's the easiest way to improve your security without remembering dozens of passwords.</li>
+              <li><strong>Enable MFA Everywhere:</strong> It's free, easy, and highly effective.</li>
+              <li><strong>Stay Informed:</strong> Cyber threats evolve quickly — follow cybersecurity blogs or newsletters to stay updated.</li>
+            </ol>
+          </div>
+
           <h4>🚨 What is Cybersecurity?</h4>
           <p>Cybersecurity is like having locks, alarms, and security guards for your digital life. It protects your:</p>
           <ul className="about-list">
             <li><strong>Personal Information:</strong> Photos, emails, bank details, passwords</li>
             <li><strong>Business Data:</strong> Customer information, financial records, company secrets</li>
             <li><strong>Devices:</strong> Computers, phones, tablets from viruses and hackers</li>
+          </ul>
+
+          <h4>🛡️ Why This Website Matters</h4>
+          
+          <h5 style={{ color: "var(--primary)", marginTop: "1.5rem" }}>For Companies</h5>
+          <ul className="about-list">
+            <li>
+              <strong>Compliance Made Simple:</strong> Many businesses don't realize how many cybersecurity regulations (like GDPR, CCPA, HIPAA) apply to them. This website breaks down what they mean and how to meet them.
+            </li>
+            <li>
+              <strong>Protecting Reputation:</strong> A single breach can ruin a company's reputation. By becoming compliant, companies not only avoid fines but also earn customer trust.
+            </li>
+            <li>
+              <strong>Financial Security:</strong> Cyberattacks cost companies billions every year. Compliance helps prevent costly data breaches and ransomware attacks.
+            </li>
+          </ul>
+
+          <h5 style={{ color: "var(--primary)", marginTop: "1.5rem" }}>For Individuals</h5>
+          <ul className="about-list">
+            <li>
+              <strong>Safer Online Experience:</strong> Everyone uses the internet daily — from banking to social media. This site helps individuals understand how those same cybersecurity practices keep them safe too.
+            </li>
+            <li>
+              <strong>Empowered Digital Citizens:</strong> Cybersecurity isn't just a company responsibility. By learning how to protect themselves, people help create a safer digital ecosystem for everyone.
+            </li>
+          </ul>
+
+          <h4>👩‍💻 Everyday Cybersecurity Tips for Users</h4>
+          <p style={{ marginBottom: "1rem", color: "var(--text-muted)" }}>
+            Even if you're not a tech expert, you can still protect yourself online with simple habits:
+          </p>
+          <ul className="about-list">
+            <li>
+              <strong>🔒 Use Strong, Unique Passwords:</strong> Combine uppercase, lowercase, numbers, and symbols. Avoid reusing passwords across accounts.
+            </li>
+            <li>
+              <strong>🛑 Enable Multi-Factor Authentication (MFA):</strong> Adds an extra layer of security beyond just a password.
+            </li>
+            <li>
+              <strong>📬 Think Before You Click:</strong> Don't open links or attachments from unknown emails — phishing is one of the top ways hackers get in.
+            </li>
+            <li>
+              <strong>🔐 Keep Software Updated:</strong> Regular updates patch vulnerabilities that hackers exploit.
+            </li>
+            <li>
+              <strong>🧑‍💻 Use Secure Wi-Fi:</strong> Avoid logging into sensitive accounts on public Wi-Fi networks.
+            </li>
+            <li>
+              <strong>🧼 Limit Sharing Online:</strong> Be cautious about sharing personal details on social media — they can be used in social engineering attacks.
+            </li>
           </ul>
 
           <h4>🎯 Common Threats (What to Watch Out For)</h4>
@@ -78,7 +142,40 @@ function BeginnerGuidePage({ onBack, theme }) {
             </li>
           </ul>
 
-          <h4>🧠 Remember These Golden Rules</h4>
+          <h4>📚 Resources to Enhance Cybersecurity</h4>
+          <p style={{ marginBottom: "1rem", color: "var(--text-muted)" }}>
+            Here are some trusted tools and websites to level up your online safety:
+          </p>
+          <ul className="about-list">
+            <li>
+              <strong><a href="https://haveibeenpwned.com" target="_blank" rel="noopener noreferrer">Have I Been Pwned</a>:</strong> Check if your email or passwords have been leaked.
+            </li>
+            <li>
+              <strong><a href="https://www.cisa.gov" target="_blank" rel="noopener noreferrer">Cybersecurity & Infrastructure Security Agency (CISA)</a>:</strong> Official U.S. government resources, alerts, and guides.
+            </li>
+            <li>
+              <strong><a href="https://staysafeonline.org" target="_blank" rel="noopener noreferrer">StaySafeOnline.org</a>:</strong> Simple tips for consumers and small businesses.
+            </li>
+            <li>
+              <strong>Password Managers:</strong> <a href="https://www.lastpass.com" target="_blank" rel="noopener noreferrer">LastPass</a> / <a href="https://bitwarden.com" target="_blank" rel="noopener noreferrer">Bitwarden</a> — Generate and store strong passwords.
+            </li>
+            <li>
+              <strong>VPN Services:</strong> <a href="https://protonvpn.com" target="_blank" rel="noopener noreferrer">ProtonVPN</a> / <a href="https://nordvpn.com" target="_blank" rel="noopener noreferrer">NordVPN</a> — Secure your connection on public networks.
+            </li>
+          </ul>
+
+          <h4>💡 Fun Facts About Cybersecurity</h4>
+          <div style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: "8px", padding: "1rem", margin: "1rem 0" }}>
+            <ul className="about-list" style={{ margin: "0" }}>
+              <li>🦠 The first computer virus was created in 1986 — it was called "Brain."</li>
+              <li>🔐 "123456" and "password" are still among the most common passwords every year.</li>
+              <li>🧑‍💻 A hacker attacks someone online every 39 seconds on average.</li>
+              <li>🌐 More than 90% of cyberattacks start with a phishing email.</li>
+              <li>💸 The global cost of cybercrime is expected to hit $10.5 trillion annually by 2025.</li>
+            </ul>
+          </div>
+
+          <h4> Remember These Golden Rules</h4>
           <ul className="about-list">
             <li><strong>Think before you click:</strong> Suspicious emails, links, or downloads</li>
             <li><strong>Keep everything updated:</strong> Software updates often fix security holes</li>
