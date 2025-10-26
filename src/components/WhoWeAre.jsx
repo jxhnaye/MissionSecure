@@ -8,13 +8,31 @@
 export default function WhoWeAre({ modalClose, onNavigateToTeam }) {
   return (
     <div className="modal" role="dialog" aria-modal="true" aria-labelledby="whoWeAreTitle">
-      <div className="modal__card bubble WhoWeAre-modal">
+      <div className="modal__card bubble WhoWeAre-modal" style={{
+        maxHeight: "90vh",
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column"
+      }}>
         <div className="modal__head">
           <div className="WhoWeAre-brand">
             <h3 id="whoWeAreTitle">Who We Are</h3>
           </div>
           <button className="link" onClick={modalClose} aria-label="Close Who We Are modal">✕</button>
         </div>
+        
+        <div style={{
+          flex: "1",
+          overflowY: "auto",
+          padding: "0 1rem",
+          scrollbarWidth: "none", /* Firefox */
+          msOverflowStyle: "none", /* Internet Explorer 10+ */
+        }}>
+          <style jsx>{`
+            div::-webkit-scrollbar {
+              display: none; /* Safari and Chrome */
+            }
+          `}</style>
         
         <p>
           This comprehensive cybersecurity assessment translates complex NIST SP 800-171 standards into 
@@ -60,9 +78,18 @@ export default function WhoWeAre({ modalClose, onNavigateToTeam }) {
             It serves as a demonstration of cybersecurity best practices and modern web development techniques.
           </p>
         </div>
+        </div>
 
-        {/* actions */}
-        <div className="cta" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        {/* actions - Fixed at bottom */}
+        <div className="cta" style={{ 
+          display: "flex", 
+          gap: 12, 
+          flexWrap: "wrap",
+          padding: "1rem",
+          borderTop: "1px solid var(--border)",
+          marginTop: "auto",
+          backgroundColor: "var(--panel)"
+        }}>
           <button className="btn btn--primary" onClick={modalClose} autoFocus>Got it</button>
           <button
             className="btn btn--secondary"

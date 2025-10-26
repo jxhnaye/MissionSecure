@@ -14,6 +14,7 @@ function CyberNews({ modalClose, initialNews = null }) {
       setError(null);
       try {
         const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
+        console.log('NewsAPI Key exists:', !!apiKey); // Debug log
         if (!apiKey) {
           setError('News feature temporarily unavailable');
           setNews([]);
@@ -36,6 +37,7 @@ function CyberNews({ modalClose, initialNews = null }) {
         const data = await res.json();
         setNews(data.articles || []);
       } catch (e) {
+        console.log('News API Error:', e.message); // Debug log
         if (e.name !== "AbortError") {
           setError('News feature temporarily unavailable');
         }
