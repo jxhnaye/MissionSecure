@@ -86,9 +86,7 @@ export default function WhoWeAre({ modalClose, onNavigateToTeam }) {
           gap: 12, 
           flexWrap: "wrap",
           padding: "1rem",
-          borderTop: "1px solid var(--border)",
-          marginTop: "auto",
-          backgroundColor: "var(--panel)"
+          marginTop: "auto"
         }}>
           <button className="btn btn--primary" onClick={modalClose} autoFocus>Got it</button>
           <button
